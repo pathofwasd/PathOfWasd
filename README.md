@@ -125,9 +125,10 @@ https://www.youtube.com/watch?v=DBD1n-EclmE
 - I’ll provide a full tutorial soon, but here’s a basic explanation:
 
 #### After Mouse Jump Delay
-- Adds a delay **before** the real mouse (hidden) is teleported to the virtual mouse.
-- This lets the skill cast from the real mouse’s position (near center) **before** snapping to the virtual one (your cursor target).
-
+- Adds a delay **after** the real mouse (hidden) is teleported to the virtual mouse.
+- This ensures the skill performed, performs at the visual cursors location after the real cursor teleports to it on skill use. Without the delay, the events happens so fast, the first skill use tends to fire before the cursor teleports to the visual cursor, causing the skill to miss/be inaccurate.
+ That actually isnt true technically, but its easiest to describe that way. POE has its own delays in game, this is basically offsetting that.
+  
 #### Before Move Delay
 - Adds a delay **after** casting a skill **before** movement resumes via WASD.
 - Helps avoid interrupting skill animations by moving too early.
