@@ -76,6 +76,8 @@
 - This app is *not affiliated with or endorsed by Grinding Gear Games*.
 - Use at your own risk. It does not modify game files or memory, but as with any overlay tool and tool that semi does automated clicks, caution is advised.
 - I have not had a lot of time to test this, so if you do weird things or try to break the app, it will likely break.
+- Yes I will open source eventually. The code is just a mess and rushed. I did do lots of refactoring, but need to do more. It was my first WPF app.
+- If you really really want the source code and I don't have it up yet (in the case I have no time and this starts to slip), then message me on discord and I will just ago ahead and add the source code.
 - Some settings may not be self explainitory, if you have questions, message me on discord, I will try to find time to post a tutorital this weekend. I have lots of work. Enjoy!
 
 ---
