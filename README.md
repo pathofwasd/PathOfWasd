@@ -34,6 +34,26 @@
 
 ---
 
+### ⚠️ Antivirus Warning / False Positives
+
+- **This program may get flagged by antivirus software or Windows Defender.**
+
+- This is expected due to the way the app works — it’s a standalone `.exe` that uses **low-level Windows API hooks** to:
+  - Monitor key presses and mouse input
+  - Simulate movement
+  - Intercept or redirect cursor actions
+
+- These behaviors are common in malware, which is why some antivirus tools may flag it **even though it’s harmless**.
+
+- Rest assured:
+  - The program does **not** access the internet, modify system files, or install anything.
+  - It does **not** modify the Path of Exile game files or memory.
+  - The code is local and will be open-sourced when I have time to clean it up.
+
+- If you're unsure, feel free to scan the file on [VirusTotal](https://www.virustotal.com/) or wait for the open-source release.
+
+---
+
 ## 📢 Status
 
 - This is the **first public build**, uploaded immediately after initial development.
