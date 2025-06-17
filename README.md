@@ -46,6 +46,10 @@
 ## 📖 Documentation & Support
 
 - Full instructions and tutorials will be added soon.
+- AppData\Local\PathOfWASD you can replace the cursor here if you want.
+- Midpoint is the middle of your screen with a slight offset, as the "middle" of your character in POE is slightly under the screens true middle (atleast for my monitor?).
+- But in the case your programs calculated midpoint is wack, you can set your own midpoint.
+- Your midpoint is what will dictate your movement locations while pressing WASD, if it is not centered well, A and D may drift slightly up or down. 
 - For now, you can:
   - 🛠 Submit a bug or issue [here on GitHub](../../issues)
   - 💬 Contact me directly on Discord: `bingtar`
@@ -59,6 +63,8 @@
 
 - This app is *not affiliated with or endorsed by Grinding Gear Games*.
 - Use at your own risk. It does not modify game files or memory, but as with any overlay tool and tool that semi does automated clicks, caution is advised.
+- I have not had a lot of time to test this, so if you do weird things or try to break the app, it will likely break.
+- Some settings may not be self explainitory, if you have questions, message me on discord, I will try to find time to post a tutorital this weekend. I have lots of work. Enjoy!
 
 ---
 
