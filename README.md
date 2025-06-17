@@ -6,8 +6,8 @@
 
 ---
 
-Early video demo, havent had the time to make a demo with the released  version. But the concept is the same :)
-https://www.youtube.com/watch?v=DBD1n-EclmE
+Early video demo
+https://www.youtube.com/watch?v=IaNiWAB-JWI
 
 ## 🔧 What It Does
 
@@ -96,6 +96,7 @@ https://www.youtube.com/watch?v=DBD1n-EclmE
 - The *Midpoint* is the center of your screen with a slight offset — the "middle" of your character in Path of Exile is slightly below the true screen center (at least on my monitor).
 - If the calculated midpoint seems off, you can manually set your own.
 - The midpoint determines the origin for your WASD movement — if it's not centered well, pressing A or D may cause a slight upward/downward drift.
+- You manually set your own by pressing the set midpoint key with your cursor as close to the middle of screen possible, usually between your characters legs, then testing WASD mode in game to see if the directions traveled seem fine.
 
 ---
 
