@@ -6,6 +6,9 @@
 
 ---
 
+Early video demo, havent had the time to make a demo with the released  version. But the concept is the same :)
+https://www.youtube.com/watch?v=DBD1n-EclmE
+
 ## 🔧 What It Does
 
 - Enables **WASD movement** in Path of Exile (tested on PoE 3.26).
