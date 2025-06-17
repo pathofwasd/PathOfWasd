@@ -144,6 +144,23 @@
 - **Stand Key:**  
   The key in Path of Exile's game settings that stops movement while attacking.
 
+### Modifier Keys (Ctrl, Shift, Alt)
+
+- You **can** use key combinations like `Ctrl+Key`, `Shift+Key`, or `Alt+Key` in Path of Exile — and the overlay supports this natively.
+
+- Here's how it works:  
+  If you set a skill key in the overlay to something like `Q`, it will automatically respond to:
+  - `Q`
+  - `Shift+Q`
+  - `Alt+Q`
+  - `Ctrl+Q`
+
+- This means you **don’t need to manually bind every modifier combo** in the overlay.  
+  Just make sure your in-game bindings are set properly (e.g., `Q` for one skill, `Ctrl+Q` for another), and the overlay will trigger the correct skill depending on which modifier key you’re holding.
+
+- TL;DR: **One overlay binding = works with all modifier versions of that key.**
+
+
 ### 💡 Tips
 
 - You may notice that many of the default keybinds — aside from the main skill keys — are set to keys that don’t have much of an effect when pressed or held down normally, like Scroll lock or the F keys.  
