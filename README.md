@@ -67,7 +67,7 @@
 ## Instructions (More tutorials coming soon)
 
 ## MOST IMPORTANT THING
-- Game MUST be in BORDERLESS windowed to work..
+- Game MUST be in Fullscreen BORDERLESS WINDOWED to work..
 - WASD with menus open will not work well, meaning if you open your inventory and while using WASD to move, weird movements will occur and may not work well. Use hold toggle/toggle WASD mode while in game menus, I go more in depth on this down below.
 
 - Full instructions and tutorials will be added soon.
