@@ -46,7 +46,8 @@
 ## 📖 Documentation & Support
 
 - Full instructions and tutorials will be added soon.
-- AppData\Local\PathOfWASD you can replace the cursor here if you want.
+- AppData\Local\PathOfWASD you can replace the cursor here if you want. Ex: C:\Users\someuser\AppData\Local\PathOfWASD
+- IMPORTANT: if you add a custom cursor make sure the file name is "cursor" and is a png, also make sure to remove the old one.
 - Midpoint is the middle of your screen with a slight offset, as the "middle" of your character in POE is slightly under the screens true middle (atleast for my monitor?).
 - But in the case your programs calculated midpoint is wack, you can set your own midpoint.
 - Your midpoint is what will dictate your movement locations while pressing WASD, if it is not centered well, A and D may drift slightly up or down.
@@ -58,8 +59,8 @@
 - This allows for skills to not performed in the WASD real cursor position (somewhere close to the middle) before moving to the virtual mouse (where you were aiming when pressing the skill).
 - For "Before Move Delay" is a delay for how long to wait after pressing a skill to allow movement. So if you tap a skill, it will wait a small delay, before trying to moving in your held down WASD direction.
 - Some skills will require more or less of a delay than others, later down the road I want to add the ability to add a custom delay for each skill binding because of this.
-- For now you can either have no delay for this and always hold you skill move until 1 skill happens, or have a small one size fits all delay, which I found to be 100ms.
-- Movement key is they key walk or move is bound to on your skill bar
+- For now you can either have no delay and always hold you skill until the skill performs its action, or have a small one size fits all delay, which I found to be 100ms.
+- Movement key is the key walk or move is bound to on your skill bar
 - Stand key is the set key in the games bindings for stopping movement while attacking.
 - For now, you can:
   - 🛠 Submit a bug or issue [here on GitHub](../../issues)
