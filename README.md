@@ -44,25 +44,70 @@
 ---
 
 ## 📖 Documentation & Support
+## Instructions (More tutorials coming soon)
 
 - Full instructions and tutorials will be added soon.
-- AppData\Local\PathOfWASD you can replace the cursor here if you want. Ex: C:\Users\someuser\AppData\Local\PathOfWASD
-- IMPORTANT: if you add a custom cursor make sure the file name is "cursor" and is a png, also make sure to remove the old one.
-- Midpoint is the middle of your screen with a slight offset, as the "middle" of your character in POE is slightly under the screens true middle (atleast for my monitor?).
-- But in the case your programs calculated midpoint is wack, you can set your own midpoint.
-- Your midpoint is what will dictate your movement locations while pressing WASD, if it is not centered well, A and D may drift slightly up or down.
-- Movement Offset is how far your mouse travels and clicks while pressing W, A, S, or D. 100 was the sweet spot for my monitor, may differ for you.
-- The larger the offset, the further you will travel after quickly tapping a WASD key. Generally you want the lowest value you can get while still moving while holding WASD.
-- The delays are more advanced of features.. Play around with them if you want, I will make a tutorial that goes more indepth on them later. I found those defaults to be the sweet spot.
-- The delays are there for seamless transitions between moving and using a skill.
-- For "After Mouse Jump Delay" there is a slight delay before your real mouse (which is hidden), is teleported to the virtual one.
-- This allows for skills to not performed in the WASD real cursor position (somewhere close to the middle) before moving to the virtual mouse (where you were aiming when pressing the skill).
-- For "Before Move Delay" is a delay for how long to wait after pressing a skill to allow movement. So if you tap a skill, it will wait a small delay, before trying to moving in your held down WASD direction.
-- Some skills will require more or less of a delay than others, later down the road I want to add the ability to add a custom delay for each skill binding because of this.
-- For now you can either have no delay and always hold you skill until the skill performs its action, or have a small one size fits all delay, which I found to be 100ms.
-- Movement key is the key walk or move is bound to on your skill bar
-- Stand key is the set key in the games bindings for stopping movement while attacking.
-- For now, you can:
+
+### Custom Cursor
+
+- You can replace the cursor by placing a file at:  
+  `AppData\Local\PathOfWASD`  
+  Example: `C:\Users\someuser\AppData\Local\PathOfWASD`
+
+- **IMPORTANT:**  
+  If you add a custom cursor:
+  - The file name **must be** `cursor.png`
+  - It **must be a PNG file**
+  - You **must delete** or replace the old one
+
+---
+
+### Midpoint
+
+- The *Midpoint* is the center of your screen with a slight offset — the "middle" of your character in Path of Exile is slightly below the true screen center (at least on my monitor).
+- If the calculated midpoint seems off, you can manually set your own.
+- The midpoint determines the origin for your WASD movement — if it's not centered well, pressing A or D may cause a slight upward/downward drift.
+
+---
+
+### Movement Offset
+
+- *Movement Offset* controls how far the mouse travels and clicks when pressing W, A, S, or D.
+- A value of `100` worked well for my monitor, but it may vary for yours.
+- A higher offset = further distance traveled with each tap.
+- Generally, you want the **lowest value** that still allows smooth movement while holding WASD.
+
+---
+
+### Delays (Advanced)
+
+- These settings help smooth the interaction between movement and using skills.
+- I’ll provide a full tutorial soon, but here’s a basic explanation:
+
+#### After Mouse Jump Delay
+- Adds a delay **before** the real mouse (hidden) is teleported to the virtual mouse.
+- This lets the skill cast from the real mouse’s position (near center) **before** snapping to the virtual one (your cursor target).
+
+#### Before Move Delay
+- Adds a delay **after** casting a skill **before** movement resumes via WASD.
+- Helps avoid interrupting skill animations by moving too early.
+
+- Different skills may require different timing. Eventually, I want to allow **per-skill custom delays**.
+- For now:
+  - **Option 1:** No delay (hold each skill key until it activates).
+  - **Option 2:** Use a universal delay — I found `100ms` works well.
+
+---
+
+### Key Bindings
+
+- **Movement Key:**  
+  The key your *Walk* or *Move* skill is bound to on your skill bar.
+
+- **Stand Key:**  
+  The key in Path of Exile's game settings that stops movement while attacking.
+  
+### For now, you can:
   - 🛠 Submit a bug or issue [here on GitHub](../../issues)
   - 💬 Contact me directly on Discord: `bingtar`
 
@@ -73,16 +118,37 @@
 
 ## 📝 Notes
 
-- This app is *not affiliated with or endorsed by Grinding Gear Games*.
-- Use at your own risk. It does not modify game files or memory, but as with any overlay tool and tool that semi does automated clicks, caution is advised.
-- I have not had a lot of time to test this, so if you do weird things or try to break the app, it will likely break.
-- Yes I will open source eventually. The code is just a mess and rushed. I did do lots of refactoring, but need to do more. It was my first WPF app.
-- If you really really want the source code and I don't have it up yet and it's been a while (in the case I have no time and this starts to slip), then message me on discord and I will just ago ahead and add the source code.
-- Another reason I don't want to add the source code immediately is just in the case that GGG just really hates this app and wants it gone, then I can remove the repo and they can sig detect current builds. Doubt this will be necessary or happen. But I got a lot of hate for this app idea by POE players lol.. So use at your own risk
-- Also.. this is not some revolutionary app, it was a bit of a PITA, but honestly not too bad to make.. So someone else will just make a different version if this becomes a popular wanted feature or application. Hopefully that will make GGG fine with this..
-- Some settings may not be self explainitory, if you have questions, message me on discord, I will try to find time to post a tutorital this weekend. I have lots of work. Enjoy!
+- ⚠️ **Not affiliated with or endorsed by Grinding Gear Games.**
 
----
+- ⚙️ **Use at your own risk.**  
+  This app does **not** modify game files or memory, but like any overlay or tool that performs semi-automated clicks, caution is advised.
+
+- 🧪 **Limited Testing:**  
+  I haven’t had much time to test this. If you do weird things or try to break the app, it will probably break.
+
+- 🧼 **Code Quality & Open Source Plans:**  
+  I’ll open-source the project eventually. The code is a rushed mess — it’s my first WPF app. I’ve done a lot of refactoring, but there’s more to do.
+
+- 📨 **Want the code early?**  
+  If I haven’t uploaded it yet and it’s been a while, feel free to message me on Discord. I’ll release it manually if needed.
+
+- 🔒 **Why the delay on source release?**  
+  Just in case GGG ends up disliking the app and asks for a takedown, I can remove the repo and reduce the chance of signature detection on current builds.  
+  (This is probably unlikely, but I’ve already received a lot of hate from some PoE players — so again, **use at your own risk**.)
+
+- 🤷 **Not revolutionary tech:**  
+  It was a bit of a pain to make, but not too bad. If the idea becomes popular, someone else will likely create their own version — which might help keep GGG more relaxed about this.
+
+- 🐛 **If it blows up and bugs pile up...**  
+  I might not have time to fix everything. If that happens, I’ll just open-source it. Screw it — lol.
+
+- 🎮 **Controller Support Idea:**  
+  I’d *love* for someone to take this concept and make it work for controllers. My code could help, but it needs to be cleaned up first to be usable by a community.
+
+- ❓ **Need Help?**  
+  Some settings might not be self-explanatory. If you're confused, message me on Discord. I’ll try to post a full tutorial this weekend — I just have a lot of work.  
+  **Enjoy!**
+
 
 ## 💡 Future Plans
 
