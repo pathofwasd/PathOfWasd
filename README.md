@@ -52,6 +52,8 @@
 
 - If you're unsure, feel free to scan the file on [VirusTotal](https://www.virustotal.com/) or wait for the open-source release.
 
+- If you are really skeptical feel free to use dnSpy and reverse engineer the code. It's .NET and not obfuscated. But I mention below I will open source in due time. 
+
 ---
 
 ## 📢 Status
