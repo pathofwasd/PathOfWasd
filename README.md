@@ -79,6 +79,7 @@
 - Yes I will open source eventually. The code is just a mess and rushed. I did do lots of refactoring, but need to do more. It was my first WPF app.
 - If you really really want the source code and I don't have it up yet and it's been a while (in the case I have no time and this starts to slip), then message me on discord and I will just ago ahead and add the source code.
 - Another reason I don't want to add the source code immediately is just in the case that GGG just really hates this app and wants it gone, then I can remove the repo and they can sig detect current builds. Doubt this will be necessary or happen. But I got a lot of hate for this app idea by POE players lol.. So use at your own risk
+- Also.. this is not some revolutionary app, it was a bit of a PITA, but honestly not too bad to make.. So someone else will just make a different version if this becomes a popular wanted feature or application. Hopefully that will make GGG fine with this..
 - Some settings may not be self explainitory, if you have questions, message me on discord, I will try to find time to post a tutorital this weekend. I have lots of work. Enjoy!
 
 ---
