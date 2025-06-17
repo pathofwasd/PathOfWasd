@@ -79,6 +79,17 @@
 
 ---
 
+### Hold Toggle WASD Mode
+
+- This is actually a really important keybind. By default, it's set to a weird key (I use Scroll Lock bound to a custom mouse button), but **you’ll want to change it to something you can press easily**.
+
+- This key temporarily **disables WASD mode while held**, then **re-enables it when released**.  
+  It’s essential for quickly exiting WASD mode to pick up loot, interact with the UI, or perform other actions with your real cursor.
+
+- For longer actions, you can still use the full **Toggle Off** option, but this hold-toggle is ideal for brief interruptions.
+
+---
+
 ### Delays (Advanced)
 
 - These settings help smooth the interaction between movement and using skills.
@@ -106,6 +117,15 @@
 
 - **Stand Key:**  
   The key in Path of Exile's game settings that stops movement while attacking.
+
+### 💡 Tips
+
+- You may notice that many of the default keybinds — aside from the main skill keys — are set to keys that don’t have much of an effect when pressed or held down normally, like Scroll lock or the F keys.  
+  This was intentional.
+
+- Feel free to change the keybinds to whatever works best for you, but the more you use **passive keys** (keys that don’t do much outside the program or game), the more likely the app will run smoothly 24/7 without issues or annoyances.
+
+- There may still be a few bugs with keys getting "stuck" down. I did my best to fix these, but some might have slipped through.
   
 ### For now, you can:
   - 🛠 Submit a bug or issue [here on GitHub](../../issues)
