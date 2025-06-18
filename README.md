@@ -177,7 +177,7 @@ https://www.youtube.com/watch?v=IaNiWAB-JWI
   
 ### For now, you can:
   - 🛠 Submit a bug or issue [here on GitHub](../../issues)
-  - 💬 Contact me directly on Discord: `bingtar`
+  - 💬 Contact me directly on Discord via the Path of WASD server: https://discord.gg/5qyw2ZkgYk`
 
 ---
 
@@ -198,7 +198,7 @@ https://www.youtube.com/watch?v=IaNiWAB-JWI
   I’ll open-source the project eventually. The code is a rushed mess — it’s my first WPF app. I’ve done a lot of refactoring, but there’s more to do.
 
 - 📨 **Want the code early?**  
-  If I haven’t uploaded it yet and it’s been a while, feel free to message me on Discord. I’ll release it manually if needed.
+  If I haven’t uploaded it yet and it’s been a while, feel free to message me on Discord server of Paht of WASD. I’ll release it manually if needed.
 
 - 🔒 **Why the delay on source release?**  
   Just in case GGG ends up disliking the app and asks for a takedown, I can remove the repo and reduce the chance of signature detection on current builds.  
