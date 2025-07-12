@@ -1,0 +1,523 @@
+﻿<Application x:Class="PathOfWASD.Startup.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tb="http://www.hardcodet.net/taskbar"
+             xmlns:bgFunctionalities="clr-namespace:PathOfWASD.Overlays.BGFunctionalities">
+    <Application.Resources>
+<Style x:Key="ModernRadioButton" TargetType="RadioButton">
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="FontFamily" Value="Segoe UI"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="RadioButton">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid Width="16" Height="16" Margin="0,0,6,0">
+                        <Ellipse x:Name="OuterCircle"
+                                 Stroke="#888"
+                                 StrokeThickness="2"
+                                 Fill="Transparent"
+                                 Width="16" Height="16"/>
+
+                        <Ellipse x:Name="InnerDot"
+                                 Fill="#33AADD"
+                                 Width="8" Height="8"
+                                 Visibility="Collapsed"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <ContentPresenter VerticalAlignment="Center"
+                                      RecognizesAccessKey="True"/>
+                </StackPanel>
+
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter TargetName="InnerDot" Property="Visibility" Value="Visible"/>
+                        <Setter TargetName="OuterCircle" Property="Stroke" Value="#33AADD"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="OuterCircle" Property="Stroke" Value="#AAAAAA"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="OuterCircle" Property="Stroke" Value="#444"/>
+                        <Setter Property="Foreground" Value="#777"/>
+                        <Setter TargetName="InnerDot" Property="Fill" Value="#555"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+        <Style x:Key="ModernCheckBox" TargetType="CheckBox">
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="FontFamily" Value="Segoe UI"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="CheckBox">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid Width="16" Height="16" Margin="0,0,6,0">
+                        <Border x:Name="Box"
+                                Background="Transparent"
+                                BorderBrush="#888"
+                                BorderThickness="2"
+                                CornerRadius="2"/>
+
+                        <Path x:Name="CheckMark"
+                              Data="M 1 5 L 6 10 L 13 3"
+                              Stroke="#33AADD"
+                              StrokeThickness="2"
+                              StrokeEndLineCap="Round"
+                              StrokeStartLineCap="Round"
+                              Width="12" Height="12"
+                              RenderTransformOrigin="0.5,0.5"
+                              Visibility="Collapsed"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">
+                            <Path.RenderTransform>
+                                <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Grid>
+
+                    <ContentPresenter VerticalAlignment="Center"
+                                      RecognizesAccessKey="True"/>
+                </StackPanel>
+
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                        <Setter TargetName="Box" Property="BorderBrush" Value="#33AADD"/>
+                    </Trigger>
+
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="Box" Property="BorderBrush" Value="#AAAAAA"/>
+                    </Trigger>
+
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="Box" Property="BorderBrush" Value="#444"/>
+                        <Setter Property="Foreground" Value="#777"/>
+                        <Setter TargetName="CheckMark" Property="Stroke" Value="#555"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+
+   <Style x:Key="ModernSlider" TargetType="Slider">
+    <Setter Property="Height" Value="24"/>
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="Background" Value="#333"/>
+    <Setter Property="Minimum" Value="0"/>
+    <Setter Property="Maximum" Value="100"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="Slider">
+                <Grid VerticalAlignment="Center">
+                    <Track x:Name="PART_Track"
+                           IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+                        <Track.DecreaseRepeatButton>
+                            <RepeatButton Command="Slider.DecreaseLarge"
+                                          Background="#33AADD"
+                                          BorderThickness="0"
+                                          Style="{x:Null}"
+                                          IsTabStop="False">
+                                <Rectangle Height="4" VerticalAlignment="Center" RadiusX="2" RadiusY="2"/>
+                            </RepeatButton>
+                        </Track.DecreaseRepeatButton>
+
+                        <Track.IncreaseRepeatButton>
+                            <RepeatButton Command="Slider.IncreaseLarge"
+                                          Background="#444"
+                                          BorderThickness="0"
+                                          Style="{x:Null}"
+                                          IsTabStop="False">
+                                <Rectangle Height="4" VerticalAlignment="Center" RadiusX="2" RadiusY="2"/>
+                            </RepeatButton>
+                        </Track.IncreaseRepeatButton>
+
+                        <Track.Thumb>
+                            <Thumb x:Name="PART_Thumb"
+                                   Width="12" Height="12"
+                                   Background="White"
+                                   BorderBrush="#999"
+                                   BorderThickness="1"
+                                   VerticalAlignment="Center"/>
+                        </Track.Thumb>
+                    </Track>
+                </Grid>
+
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="PART_Thumb" Property="Background" Value="#DDDDDD"/>
+                        <Setter TargetName="PART_Thumb" Property="BorderBrush" Value="#33AADD"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="PART_Thumb" Property="Background" Value="#555"/>
+                        <Setter Property="Opacity" Value="0.5"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+<Style x:Key="ModernScrollBar" TargetType="ScrollBar">
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
+    <Setter Property="OverridesDefaultStyle" Value="True"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="ScrollBar">
+                <Grid x:Name="Bg" Background="{TemplateBinding Background}">
+                    <Track x:Name="PART_Track"
+                           IsDirectionReversed="true"
+                           Focusable="False">
+                        <Track.Thumb>
+                            <Thumb x:Name="Thumb"
+                                   Width="12"
+                                   Background="#555"
+                                   BorderBrush="#888"
+                                   BorderThickness="0"
+                                   Margin="1" />
+                        </Track.Thumb>
+                        <Track.IncreaseRepeatButton>
+                            <RepeatButton Style="{x:Null}" IsTabStop="False" />
+                        </Track.IncreaseRepeatButton>
+                        <Track.DecreaseRepeatButton>
+                            <RepeatButton Style="{x:Null}" IsTabStop="False" />
+                        </Track.DecreaseRepeatButton>
+                    </Track>
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="Orientation" Value="Horizontal">
+                        <Setter TargetName="Thumb" Property="Height" Value="6"/>
+                        <Setter TargetName="Thumb" Property="Width" Value="Auto"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="Thumb" Property="Background" Value="#33AADD"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+    <Setter Property="Width" Value="14"/>
+</Style>
+        <Style x:Key="TitleBarButtonStyle"
+               TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="Width"        Value="40"/>
+            <Setter Property="Height"       Value="32"/>
+            <Setter Property="FontSize"     Value="12"/>
+            <Setter Property="Background"   Value="Transparent"/>
+            <Setter Property="BorderBrush"  Value="Transparent"/>
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True"/>
+        </Style>
+        
+        <Style x:Key="BaseTextBlockStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Ideal"/>
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+            <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        </Style>
+        
+        <Style x:Key="UnderlinedTextBlockStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource BaseTextBlockStyle}">
+
+            <Setter Property="TextBlock.TextDecorations">
+                <Setter.Value>
+                    <TextDecorationCollection>
+                        <TextDecoration 
+                            Location="Underline"
+                            PenOffset="1"
+                            PenOffsetUnit="Pixel">
+          
+                            <TextDecoration.Pen>
+                                <Pen Brush="White"
+                                     Thickness="1"
+                                     DashCap="Square">
+                                    <Pen.DashStyle>
+                                        <DashStyle Dashes="5,5"
+                                                   Offset="0"/>
+                                    </Pen.DashStyle>
+                                </Pen>
+                            </TextDecoration.Pen>
+                        </TextDecoration>
+                    </TextDecorationCollection>
+                </Setter.Value>
+            </Setter>
+
+
+            <Setter Property="ToolTip"
+                    Value="{Binding RelativeSource={RelativeSource Self}, Path=Tag}"/>
+
+            <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+            <Setter Property="ToolTipService.BetweenShowDelay" Value="100"/>
+
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="LightBlue"/>
+                </Trigger>
+                <Trigger Property="Tag" Value="NoUnderline">
+                    <Setter Property="TextDecorations" Value="{x:Null}" />
+                </Trigger>
+            </Style.Triggers>
+            
+        </Style>
+
+        <Style TargetType="ToolTip">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+            <Setter Property="Placement" Value="MousePoint"/>
+            <Setter Property="Background" Value="#2D2D30"/>
+            <Setter Property="BorderBrush" Value="#4D4D4D"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+          
+                            <ScrollViewer
+                                MaxHeight="300"
+                                VerticalScrollBarVisibility="Auto"
+                                HorizontalScrollBarVisibility="Disabled">
+
+                                <TextBlock
+                                    Text="{TemplateBinding Content}"
+                                    TextWrapping="Wrap"
+                                    Foreground="White"
+                                    FontSize="12"
+                                    FontFamily="Segoe UI"
+                                    MaxWidth="400"/>
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        
+       
+        <Style TargetType="ContentControl">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style TargetType="GroupBox">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="ModernButton" TargetType="Button">
+    <Setter Property="Background" Value="#1A1A1A"/>
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="Padding" Value="8,4"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="BorderBrush" Value="#555"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="Button">
+                <Border x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                    <ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      RecognizesAccessKey="True"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="border" Property="BorderBrush" Value="#AAAAAA"/>
+                        <Setter TargetName="border" Property="Background" Value="#292929"/> 
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter TargetName="border" Property="Background" Value="#333"/>
+                        <Setter TargetName="border" Property="BorderBrush" Value="#66CCFF"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="border" Property="Background" Value="#1A1A1A"/>
+                        <Setter TargetName="border" Property="BorderBrush" Value="#333"/>
+                        <Setter Property="Foreground" Value="#777"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+        <Style x:Key="ModernTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="Background" Value="#30FFFFFF"/> 
+    <Setter Property="Padding" Value="6,2"/>
+    <Setter Property="BorderBrush" Value="#888"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="SnapsToDevicePixels" Value="True"/>
+    <Setter Property="CaretBrush" Value="White"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="TextBox">
+                <Border x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4"
+                        SnapsToDevicePixels="True">
+                    <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="border" Property="BorderBrush" Value="#AAAAAA"/>
+                        <Setter TargetName="border" Property="Background" Value="#40FFFFFF"/>
+                    </Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter TargetName="border" Property="BorderBrush" Value="#33AADD"/>
+                        <Setter TargetName="border" Property="Background" Value="#60FFFFFF"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="border" Property="Background" Value="#1A1A1A"/>
+                        <Setter TargetName="border" Property="BorderBrush" Value="#333"/>
+                        <Setter Property="Foreground" Value="#777"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+        <Style x:Key="MaterialGroupExpander" TargetType="Expander">
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="Expander">
+                <Border BorderBrush="White" BorderThickness="1" CornerRadius="6" Background="#222">
+                    <DockPanel>
+                        <ToggleButton 
+                            Name="HeaderSite"
+                            Content="{TemplateBinding Header}"
+                            FontWeight="Bold"
+                            DockPanel.Dock="Top"
+                            Background="Transparent"
+                            Foreground="White"
+                            Padding="8,4"
+                            BorderThickness="0"
+                            HorizontalContentAlignment="Left"
+                            IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                            Focusable="False">
+                            <ToggleButton.Style>
+                                <Style TargetType="ToggleButton">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Name="HeaderBorder"
+                                                        Background="Transparent"
+                                                        CornerRadius="6"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="HeaderBorder" Property="Background" Value="#4444FF20"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="HeaderBorder" Property="Background" Value="#4444FF40"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+
+                        <ContentPresenter 
+                            Name="ExpandSite"
+                            Visibility="Collapsed"
+                            Margin="8"
+                            Focusable="false"/>
+                    </DockPanel>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsExpanded" Value="True">
+                        <Setter TargetName="ExpandSite" Property="Visibility" Value="Visible"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+        <Style TargetType="bgFunctionalities:KeyCaptureBox"
+               BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="MinHeight" Value="24"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="Gray"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedKey, RelativeSource={RelativeSource Self}}"
+                             Value="{x:Null}">
+                    <Setter Property="BorderBrush" Value="Red"/>
+                </DataTrigger>
+                <Trigger Property="IsKeyboardFocused" Value="True">
+                    <Setter Property="Background" Value="#F0F0F0"/>
+                    <Setter Property="Text" Value="…press any key…"/>
+                    <Setter Property="Foreground" Value="DarkGray"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <tb:TaskbarIcon x:Key="TrayIcon"
+                        IconSource="pack://application:,,,/PathOfWASD;component/Asset/moveexile.ico"
+                        ToolTipText="PathOfWASD">
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Show/Hide Overlay"
+                              Command="{Binding ToggleOverlayCommand}" />
+                    <Separator/>
+                    <MenuItem Header="Save and Exit"
+                              Command="{Binding ExitCommand}" />
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
+    </Application.Resources>
+</Application>

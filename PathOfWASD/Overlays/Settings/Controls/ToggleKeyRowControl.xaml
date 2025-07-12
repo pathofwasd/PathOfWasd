@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="PathOfWASD.Overlays.Settings.Controls.ToggleKeyRowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:bgFunctionalities="clr-namespace:PathOfWASD.Overlays.BGFunctionalities"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Height="30">
+
+    <Grid Margin="0,2">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Column="0"
+                Width="24"
+                Margin="2,0,6,0"
+                Padding="4,0"
+                Style="{StaticResource ModernButton}" 
+                Command="{Binding DataContext.RemoveToggleEntryCommand,
+                              RelativeSource={RelativeSource AncestorType=Window}}"
+                CommandParameter="{Binding}">
+            <iconPacks:PackIconMaterial
+                Kind="Minus"
+                Width="16" Height="16"/>
+        </Button>
+
+        <bgFunctionalities:KeyCaptureBox
+            Style="{StaticResource ModernTextBox}"
+            Grid.Column="1"
+            Margin="0"
+            MinHeight="24"
+            SelectedKey="{Binding SelectedKey.DisplayKey, Mode=TwoWay}" />
+
+        <CheckBox Grid.Column="2"
+                  Style="{StaticResource ModernCheckBox}"
+                  Foreground="White"
+                  IsChecked="{Binding IsDirectional, Mode=TwoWay}"
+                  Margin="16,5,0,0">
+            <CheckBox.Content>
+                <TextBlock
+                    Style="{StaticResource UnderlinedTextBlockStyle}"
+                    Text="Skill Aimed by WASD Direction"
+                    Tag="When checked, this skill fires in your WASD movement direction instead of at the virtual mouse cursor.&#10;&#10;Use it to simulate rolls or movement skills (e.g., PoE2 ‘roll’) while still allowing other cursor-aimed abilities independently."
+                    />
+            </CheckBox.Content>
+            
+        </CheckBox>
+    </Grid>
+</UserControl>

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>PathOfWASD</RootNamespace>
+        <ApplicationIcon>Asset\moveexile.ico</ApplicationIcon>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+      <PackageReference Include="Hardcodet.Wpf.TaskbarNotification.Core" Version="2.0.0" />
+      <PackageReference Include="InputSimulatorPlus" Version="1.0.7" />
+      <PackageReference Include="MahApps.Metro.IconPacks" Version="5.1.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
+      <PackageReference Include="MouseKeyHook" Version="5.7.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Resource Include="Asset\PathOfWASD4.ico" />
+      <Resource Include="Asset\moveexile.ico" />
+      <Resource Include="Asset\cursor4.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ApplicationDefinition Include="Startup\App.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </ApplicationDefinition>
+    </ItemGroup>
+
+</Project>
