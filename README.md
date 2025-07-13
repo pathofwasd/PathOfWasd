@@ -3,6 +3,7 @@
 **Path of WASD** is a WPF-based overlay application that enables **WASD movement** in *Path of Exile (PoE)*.
 
 Version 1.0.0 Released! 
+
 <img width="586" height="1103" alt="image" src="https://github.com/user-attachments/assets/268e6d34-9850-4053-b91f-1438d40c7615" />
 
 ---
@@ -11,6 +12,8 @@ Version 1.0.0 Released!
 - [Invite link](https://discord.gg/GDkyXtkDzc)
 - Best place for updates released for Path of WASD.
 - This is a great place to ask questions or submit bugs. I try to be as responsive as possible.
+
+---
 
 ## What It Does
 
@@ -50,6 +53,7 @@ https://www.youtube.com/watch?v=IaNiWAB-JWI
 - WASD with menus open will not work well, meaning if you open your inventory and while using WASD to move, weird movements will occur and may not work well. Use hold toggle/toggle WASD mode while in game menus, I go more in depth on this down below.
 
   **Disclaimer:** This is a third party application and is not affiliated with Grinding Gear Games. Use at your own risk. I am not responsible for any bans or issues that may arise from using this application.
+  
 ---
 
 ## How Path of WASD works 
@@ -58,6 +62,8 @@ https://www.youtube.com/watch?v=IaNiWAB-JWI
 - Path of WASD purely simulates WASD movement with your mouse while creating a simulated virtual cursor used for aiming skill while the program hijacks your real mouse location and movement to dictate your WASD movement direction, and then on skill use, it teleports your real mouse to your virtual mouse, once done with skills it will auto resume movement direction with real cursor.
 - I have gone through great efforts to have this functionality seamless and "behind the scenes", but rest assured, there is no magic or crazy modifications happening, just very detailed specific logic to control your mouse and keyboard actions to simulate WASD movement in point and click games.
 - In theory this app would work for any other point and click games that are similar to POE, but this application is specifically fine tuned with POE mechanics and controls in mind.
+
+---
 
 ## Can this get me banned?
 - This is a third party application and is not affiliated with Grinding Gear Games. Use at your own risk. I am not responsible for any bans or issues that may arise from using this application.
@@ -93,14 +99,16 @@ https://www.youtube.com/watch?v=IaNiWAB-JWI
   -Someone in the Path of WASD discord has reached out to GGG and their response was this: 
       "I would advise against using any programs that interact with the game client to provide an advantage over other players, as this may result in your account being permanently banned. I'm afraid, due to the dynamics of our policies, we're unable to guarantee if a tool is allowed or would remain allowed in the future. If you're unsure if a tool falls within these guidelines, we'd suggest refraining from using such a tool."
 
--There exists a similar app to mine but is for controller support, it is by bennybroseph
-  -Benny's app has been used by thousands and no one has complained about a ban, but the app was for POE and D3, so I am unsure how much POE use it got.
-  -[Benny's app](https://github.com/bennybroseph/AutoHotKey_Scripts)
+- There exists a similar app to mine but is for controller support, it is by bennybroseph
+  - Benny's app has been used by thousands and no one has complained about a ban, but the app was for POE and D3, so I am unsure how much POE use it got.
+  - [Benny's app](https://github.com/bennybroseph/AutoHotKey_Scripts)
 
--With all of this said, if ANYONE has a deep connect with a high up at GGG and wants to show them the source code for this or Video demo and get a specific YES or NO, that would be much appreaciated.
+- With all of this said, if ANYONE has a deep connect with a high up at GGG and wants to show them the source code for this or Video demo and get a specific YES or NO, that would be much appreaciated.
 I would not personally use this on an account with 100s or 1000s of dollars of MTX or rare items (I say that as I developed and tested this whole app on my account that has POE2 with like 300 dollars of MTX lol..), but if you refuse to play POE without WASD and don't have anything and want to try the game out, this app is perfect.
 
 **Disclaimer:** This is a third party application and is not affiliated with Grinding Gear Games. Use at your own risk. I am not responsible for any bans or issues that may arise from using this application.
+
+---
 
 ### ⚠️ Antivirus Warning / False Positives
 
