@@ -1,41 +1,106 @@
 # Path of WASD
 
-**Path of WASD** is a WPF-based overlay application that enables **WASD movement** in *Path of Exile (PoE)*. This is an early release aimed at getting feedback from the community. The tool is primarily for players who want a more traditional action RPG control scheme using keyboard movement.
+**Path of WASD** is a WPF-based overlay application that enables **WASD movement** in *Path of Exile (PoE)*.
 
-> ⚠️ This is an experimental build. Expect bugs and unpolished behavior.
+Version 1.0.0 Released! 
+<img width="586" height="1103" alt="image" src="https://github.com/user-attachments/assets/268e6d34-9850-4053-b91f-1438d40c7615" />
 
 ---
 
-Early video demo
-https://www.youtube.com/watch?v=IaNiWAB-JWI
+## Join the Discord!
+- [Invite link](https://discord.gg/GDkyXtkDzc)
+- Best place for updates released for Path of WASD.
+- This is a great place to ask questions or submit bugs. I try to be as responsive as possible.
 
-## 🔧 What It Does
+## What It Does
 
-- Enables **WASD movement** in Path of Exile (tested on PoE 3.26).
 - Runs as a transparent overlay using WPF.
-- Offers a minimal settings UI to customize keybindings and modes.
+- Offers a settings UI to customize keybindings and modes.
 - Supports mouse-based aiming alongside keyboard movement.
 
+For a better view of all the features, watch the config video demo
+https://www.youtube.com/watch?v=IaNiWAB-JWI
+
 ---
 
-## 📦 Requirements
+## Requirements
 
 - Windows 10 or newer
 - [.NET 6 or later runtime](https://dotnet.microsoft.com/en-us/download/dotnet) installed (if not using the self-contained version)
 - Path of Exile installed (Steam or standalone)
+- That's it!
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 1. Download the latest `.exe` file from the [Releases](../../releases) tab.
 2. Run the application. (It does **not** require installation.)
 3. Launch Path of Exile.
 4. Use the settings menu to bind movement keys and toggle overlay options.
+5. Hover over text in the overlay for a better explaination as to what certain settings do and how they function.
 
-> 🧩 First-time setup might require running the app as Administrator to ensure overlay functionality.
+> First-time setup might require running the app as Administrator to ensure overlay functionality.
 
 ---
+
+## Important things to keep in mind while using Path of WASD
+- Game MUST be in Fullscreen BORDERLESS WINDOWED to work..
+- VSync enabled or on auto.
+- WASD with menus open will not work well, meaning if you open your inventory and while using WASD to move, weird movements will occur and may not work well. Use hold toggle/toggle WASD mode while in game menus, I go more in depth on this down below.
+
+  **Disclaimer:** This is a third party application and is not affiliated with Grinding Gear Games. Use at your own risk. I am not responsible for any bans or issues that may arise from using this application.
+---
+
+## How Path of WASD works 
+- Path of WASD **DOES NOT** read or write to game memory, it does not modify or adapt the game client or its data, it does not mess with the path of exile process in ANY way.
+- Path of WASD **IS NOT** not a mod similar to how the Grim Dawn WASD application is a mod. This **DONT NOT** modifiy any game files.
+- Path of WASD purely simulates WASD movement with your mouse while creating a simulated virtual cursor used for aiming skill while the program hijacks your real mouse location and movement to dictate your WASD movement direction, and then on skill use, it teleports your real mouse to your virtual mouse, once done with skills it will auto resume movement direction with real cursor.
+- I have gone through great efforts to have this functionality seamless and "behind the scenes", but rest assured, there is no magic or crazy modifications happening, just very detailed specific logic to control your mouse and keyboard actions to simulate WASD movement in point and click games.
+- In theory this app would work for any other point and click games that are similar to POE, but this application is specifically fine tuned with POE mechanics and controls in mind.
+
+## Can this get me banned?
+- This is a third party application and is not affiliated with Grinding Gear Games. Use at your own risk. I am not responsible for any bans or issues that may arise from using this application.
+- With that being said, this software is most similar to what would be called a "macro".
+- The most commonly cited rule pertaining to macros is "one action per key press."
+- Does this app do more than one action per key press?
+  - Depends on what you mean by "action"
+  - Multiple actions would be automating a sequence of events
+      - Popping a flask and logging out, multiple action, BANNABLE
+      - Using a timer to do something at a specific interval, having a time based macro that automatically uses a skill ever X seconds, BANNABLE
+      - Something that teleports mouse to inventory squares and stashes everything into stash automatically, BANNABLE
+      - Using multiple flasks in 1 button, BANNABLE
+
+  -Can I use a macro for attacking in place? (Path of WASD does this)
+    -GGG has given this type of macro a reluctant approval.
+    Sources; [Email to GGG](https://imgur.com/SVXm1td)
+  
+- What Kind of actions Path of WASD does:
+  1. When pressing W, A, S, or D it will move your mouse to X amount of pixels in the direction of UP(W), DOWN(S), RIGHT(D), LEFT(A) and then press your movement key.
+  2. When using a skill, it will teleport your mouse to your virtual mouse (which you control yourself), hold attack in place. (and then you will use the skill as you are pressing the key to do so)
+  3. Supports binding mouse click to keyboard press (singular) (almost certain this is fine)
+  4. It does more things, but this is the core stuff it does that is "macroing"
+ 
+- The honest truth? Is this bannable? Yes or no?
+  - I have no idea, it definitely is in a grey area if you go by the specific exact rules.
+  - You are controlling your mouse via your keyboard, its not doing multiple automatic location clicks in areas to perform actions to optimize gameplay.
+  - You are controlling where your mouse teleports to... with your mouse.
+  - Everything you do in Path of WASD is under YOUR control, even if it may technically be doing "multiple actions", which I cant say it is or isnt.
+  - Why am I unsure if it is multiple actions? Because if an action is moving, using a skill, thats all the app really does and you technically controll that, the app just handles how these actions happen in a way that simulates WASD gameplay
+ 
+- Have I tried to reach out to GGG for approval?
+  -No. Because I knew the response would be generic, "Use at your own risk"
+  -Someone in the Path of WASD discord has reached out to GGG and their response was this: 
+      "I would advise against using any programs that interact with the game client to provide an advantage over other players, as this may result in your account being permanently banned. I'm afraid, due to the dynamics of our policies, we're unable to guarantee if a tool is allowed or would remain allowed in the future. If you're unsure if a tool falls within these guidelines, we'd suggest refraining from using such a tool."
+
+-There exists a similar app to mine but is for controller support, it is by bennybroseph
+  -Benny's app has been used by thousands and no one has complained about a ban, but the app was for POE and D3, so I am unsure how much POE use it got.
+  -[Benny's app](https://github.com/bennybroseph/AutoHotKey_Scripts)
+
+-With all of this said, if ANYONE has a deep connect with a high up at GGG and wants to show them the source code for this or Video demo and get a specific YES or NO, that would be much appreaciated.
+I would not personally use this on an account with 100s or 1000s of dollars of MTX or rare items (I say that as I developed and tested this whole app on my account that has POE2 with like 300 dollars of MTX lol..), but if you refuse to play POE without WASD and don't have anything and want to try the game out, this app is perfect.
+
+**Disclaimer:** This is a third party application and is not affiliated with Grinding Gear Games. Use at your own risk. I am not responsible for any bans or issues that may arise from using this application.
 
 ### ⚠️ Antivirus Warning / False Positives
 
@@ -51,176 +116,17 @@ https://www.youtube.com/watch?v=IaNiWAB-JWI
 - Rest assured:
   - The program does **not** access the internet, modify system files, or install anything.
   - It does **not** modify the Path of Exile game files or memory.
-  - The code is local and will be open-sourced when I have time to clean it up.
 
-- If you're unsure, feel free to scan the file on [VirusTotal](https://www.virustotal.com/) or wait for the open-source release.
+- If you're unsure, feel free to scan the file on [VirusTotal](https://www.virustotal.com/).
 
-- If you are really skeptical feel free to use dnSpy and reverse engineer the code. It's .NET and not obfuscated. But I mention below I will open source in due time. 
-
----
-
-## 📢 Status
-
-- This is the **first public build**, uploaded immediately after initial development.
-- It has **not been tested** on any machine other than the developer's.
-- Expect bugs, crashes, or unexpected behavior.
-- Performance and compatibility optimizations will come later.
+- If you are really skeptical feel free to check out the code here and compile the program yourself, I will not provide support for instructions on how to compile and release your own app. 
 
 ---
 
-## 📖 Documentation & Support
-## Instructions (More tutorials coming soon)
-
-## MOST IMPORTANT THING
-- Game MUST be in Fullscreen BORDERLESS WINDOWED to work..
-- WASD with menus open will not work well, meaning if you open your inventory and while using WASD to move, weird movements will occur and may not work well. Use hold toggle/toggle WASD mode while in game menus, I go more in depth on this down below.
-
-- Full instructions and tutorials will be added soon.
-
-### Custom Cursor
-
-- You can replace the cursor by placing a file at:  
-  `AppData\Local\PathOfWASD`  
-  Example: `C:\Users\someuser\AppData\Local\PathOfWASD`
-
-- **IMPORTANT:**  
-  If you add a custom cursor:
-  - The file name **must be** `cursor.png`
-  - It **must be a PNG file**
-  - You **must delete** or replace the old one
-
----
-
-### Midpoint
-
-- The *Midpoint* is the center of your screen with a slight offset — the "middle" of your character in Path of Exile is slightly below the true screen center (at least on my monitor).
-- If the calculated midpoint seems off, you can manually set your own.
-- The midpoint determines the origin for your WASD movement — if it's not centered well, pressing A or D may cause a slight upward/downward drift.
-- You manually set your own by pressing the set midpoint key with your cursor as close to the middle of screen possible, usually between your characters legs, then testing WASD mode in game to see if the directions traveled seem fine.
-
----
-
-### Movement Offset
-
-- *Movement Offset* controls how far the mouse travels and clicks when pressing W, A, S, or D.
-- A value of `100` worked well for my monitor, but it may vary for yours.
-- A higher offset = further distance traveled with each tap.
-- Generally, you want the **lowest value** that still allows smooth movement while holding WASD.
-
----
-
-### Hold Toggle WASD Mode
-
-- This is actually a really important keybind. By default, it's set to a weird key (I use Scroll Lock bound to a custom mouse button), but **you’ll want to change it to something you can press easily**.
-
-- This key temporarily **disables WASD mode while held**, then **re-enables it when released**.  
-  It’s essential for quickly exiting WASD mode to pick up loot, interact with the UI, or perform other actions with your real cursor.
-
-- For longer actions, you can still use the full **Toggle Off** option, but this hold-toggle is ideal for brief interruptions.
-
----
-
-### Delays (Advanced)
-
-- These settings help smooth the interaction between movement and using skills.
-- I’ll provide a full tutorial soon, but here’s a basic explanation:
-
-#### After Mouse Jump Delay
-- Adds a delay **after** the real mouse (hidden) is teleported to the virtual mouse.
-- This ensures the skill performed, performs at the visual cursors location after the real cursor teleports to it on skill use. Without the delay, the events happens so fast, the first skill use tends to fire before the cursor teleports to the visual cursor, causing the skill to miss/be inaccurate.
- That actually isnt true technically, but its easiest to describe that way. POE has its own delays in game, this is basically offsetting that.
-  
-#### Before Move Delay
-- Adds a delay **after** casting a skill **before** movement resumes via WASD.
-- Helps avoid interrupting skill animations by moving too early.
-
-- Different skills may require different timing. Eventually, I want to allow **per-skill custom delays**.
-- For now:
-  - **Option 1:** No delay (hold each skill key until it activates).
-  - **Option 2:** Use a universal delay — I found `100ms` works well.
-
----
-
-### Key Bindings
-
-- **Movement Key:**  
-  The key your *Walk* or *Move* skill is bound to on your skill bar.
-
-- **Stand Key:**  
-  The key in Path of Exile's game settings that stops movement while attacking.
-
-### Modifier Keys (Ctrl, Shift, Alt)
-
-- You **can** use key combinations like `Ctrl+Key`, `Shift+Key`, or `Alt+Key` in Path of Exile — and the overlay supports this natively.
-
-- Here's how it works:  
-  If you set a skill key in the overlay to something like `Q`, it will automatically respond to:
-  - `Q`
-  - `Shift+Q`
-  - `Alt+Q`
-  - `Ctrl+Q`
-
-- This means you **don’t need to manually bind every modifier combo** in the overlay.  
-  Just make sure your in-game bindings are set properly (e.g., `Q` for one skill, `Ctrl+Q` for another), and the overlay will trigger the correct skill depending on which modifier key you’re holding.
-
-- TL;DR: **One overlay binding = works with all modifier versions of that key.**
-
-
-### 💡 Tips
-
-- You may notice that many of the default keybinds — aside from the main skill keys — are set to keys that don’t have much of an effect when pressed or held down normally, like Scroll lock or the F keys.  
-  This was intentional.
-
-- Feel free to change the keybinds to whatever works best for you, but the more you use **passive keys** (keys that don’t do much outside the program or game), the more likely the app will run smoothly 24/7 without issues or annoyances.
-
-- There may still be a few bugs with keys getting "stuck" down. I did my best to fix these, but some might have slipped through.
-  
-### For now, you can:
+### Submit Bugs:
   - 🛠 Submit a bug or issue [here on GitHub](../../issues)
-  - 💬 Contact me directly on Discord via the Path of WASD server: https://discord.gg/5qyw2ZkgYk`
+  - Join the discord server and report the bug or issue there. [Discord Invite](https://discord.gg/GDkyXtkDzc)
 
 ---
 
-![image](https://github.com/user-attachments/assets/bb57edcf-f5be-4d17-b642-a4aeb260f12b)
-
-
-## 📝 Notes
-
-- ⚠️ **Not affiliated with or endorsed by Grinding Gear Games.**
-
-- ⚙️ **Use at your own risk.**  
-  This app does **not** modify game files or memory, but like any overlay or tool that performs semi-automated clicks, caution is advised.
-
-- 🧪 **Limited Testing:**  
-  I haven’t had much time to test this. If you do weird things or try to break the app, it will probably break.
-
-- 🧼 **Code Quality & Open Source Plans:**  
-  I’ll open-source the project eventually. The code is a rushed mess — it’s my first WPF app. I’ve done a lot of refactoring, but there’s more to do.
-
-- 📨 **Want the code early?**  
-  If I haven’t uploaded it yet and it’s been a while, feel free to message me on Discord server of Paht of WASD. I’ll release it manually if needed.
-
-- 🔒 **Why the delay on source release?**  
-  Just in case GGG ends up disliking the app and asks for a takedown, I can remove the repo and reduce the chance of signature detection on current builds.  
-  (This is probably unlikely, but I’ve already received a lot of hate from some PoE players — so again, **use at your own risk**.)
-
-- 🤷 **Not revolutionary tech:**  
-  It was a bit of a pain to make, but not too bad. If the idea becomes popular, someone else will likely create their own version — which might help keep GGG more relaxed about this.
-
-- 🐛 **If it blows up and bugs pile up...**  
-  I might not have time to fix everything. If that happens, I’ll just open-source it. Screw it — lol.
-
-- 🎮 **Controller Support Idea:**  
-  I’d *love* for someone to take this concept and make it work for controllers. My code could help, but it needs to be cleaned up first to be usable by a community.
-
-- ❓ **Need Help?**  
-  Some settings might not be self-explanatory. If you're confused, message me on Discord. I’ll try to post a full tutorial this weekend — I just have a lot of work.  
-  **Enjoy!**
-
-
-## 💡 Future Plans
-
-- TBD
----
-
-Stay tuned, and thanks for helping test **Path of WASD**!
+Stay tuned, and thanks for using **Path of WASD**!
