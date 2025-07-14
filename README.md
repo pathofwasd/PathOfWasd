@@ -22,7 +22,7 @@ Version 1.0.0 Released!
 - Supports mouse-based aiming alongside keyboard movement.
 
 For a better view of all the features, watch the config video demo
-https://www.youtube.com/watch?v=IaNiWAB-JWI
+[Path of WASD Tutorial and Demo Video](https://www.youtube.com/watch?v=ElSRiYUv7yQ)
 
 ---
 
