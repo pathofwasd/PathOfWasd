@@ -58,7 +58,7 @@ https://www.youtube.com/watch?v=IaNiWAB-JWI
 
 ## How Path of WASD works 
 - Path of WASD **DOES NOT** read or write to game memory, it does not modify or adapt the game client or its data, it does not mess with the path of exile process in ANY way.
-- Path of WASD **IS NOT** not a mod similar to how the Grim Dawn WASD application is a mod. This **DONT NOT** modifiy any game files.
+- Path of WASD **IS NOT** not a mod similar to how the Grim Dawn WASD application is a mod. This **DOES NOT** modifiy any game files.
 - Path of WASD purely simulates WASD movement with your mouse while creating a simulated virtual cursor used for aiming skill while the program hijacks your real mouse location and movement to dictate your WASD movement direction, and then on skill use, it teleports your real mouse to your virtual mouse, once done with skills it will auto resume movement direction with real cursor.
 - I have gone through great efforts to have this functionality seamless and "behind the scenes", but rest assured, there is no magic or crazy modifications happening, just very detailed specific logic to control your mouse and keyboard actions to simulate WASD movement in point and click games.
 - In theory this app would work for any other point and click games that are similar to POE, but this application is specifically fine tuned with POE mechanics and controls in mind.
