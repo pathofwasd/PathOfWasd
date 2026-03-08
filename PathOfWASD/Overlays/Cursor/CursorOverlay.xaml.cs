@@ -76,33 +76,17 @@ namespace PathOfWASD.Overlays.Cursor
 
         public void ShowOverlay(CursorMode mode)
         {
-            if (mode == CursorMode.AlwaysHide) _sysCursor.HideSystemCursor();
-            else if (_sysCursor != null)       _sysCursor.RestoreSystemCursor();
+            //if (mode == CursorMode.AlwaysHide) _sysCursor.HideSystemCursor();
+            //else if (_sysCursor != null)       _sysCursor.RestoreSystemCursor();
 
-            Cursor = mode == CursorMode.AlwaysShow ? Cursors.Arrow : Cursors.None;
-            SetClickThrough(false);
+            //Cursor = mode == CursorMode.AlwaysShow ? Cursors.Arrow : Cursors.None;
+            SetClickThrough(true);
             Show();
         }
 
         public void HideOverlay(CursorMode mode, bool turnOff = false, bool isClick = false)
         {
-            if (turnOff)
-            {
-                _sysCursor.RestoreSystemCursor(); Hide(); return;
-            }
-            switch (mode)
-            {
-                case CursorMode.ShowDuringSkills:
-                case CursorMode.AlwaysShow:
-                    _sysCursor.RestoreSystemCursor(); Hide(); break;
-                case CursorMode.AlwaysHide:
-                    if (!isClick) _sysCursor.HideSystemCursor();
-                    else _sysCursor.RestoreSystemCursor();
-                    SetClickThrough(isClick);
-                    break;
-                default:
-                    Hide(); break;
-            }
+            Hide();
         }
 
         public void UpdateCursorSize(double width, double height)
