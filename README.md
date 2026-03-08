@@ -1,3 +1,6 @@
+Current Hotfix download: https://github.com/pathofwasd/PathOfWasd/releases/tag/1.0.0hotfix
+(Cursor visibilty options are currently not working)
+
 # Path of WASD
 
 **Path of WASD** is a WPF-based overlay application that enables **WASD movement** in *Path of Exile (PoE)*.
