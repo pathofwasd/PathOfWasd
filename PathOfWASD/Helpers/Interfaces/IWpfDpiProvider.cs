@@ -1,4 +1,4 @@
-﻿namespace PathOfWASD.Helpers.Interfaces;
+namespace PathOfWASD.Helpers.Interfaces;
 
 public interface IWpfDpiProvider
 {

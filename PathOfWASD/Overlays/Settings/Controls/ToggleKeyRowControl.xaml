@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="PathOfWASD.Overlays.Settings.Controls.ToggleKeyRowControl"
+<UserControl x:Class="PathOfWASD.Overlays.Settings.Controls.ToggleKeyRowControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:bgFunctionalities="clr-namespace:PathOfWASD.Overlays.BGFunctionalities"
@@ -7,11 +7,15 @@
 
     <Grid Margin="0,2">
         <Grid.ColumnDefinitions>
+            
             <ColumnDefinition Width="Auto"/>
+            
             <ColumnDefinition Width="150"/>
+            
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
+        
         <Button Grid.Column="0"
                 Width="24"
                 Margin="2,0,6,0"
@@ -25,6 +29,7 @@
                 Width="16" Height="16"/>
         </Button>
 
+        
         <bgFunctionalities:KeyCaptureBox
             Style="{StaticResource ModernTextBox}"
             Grid.Column="1"
@@ -32,6 +37,7 @@
             MinHeight="24"
             SelectedKey="{Binding SelectedKey.DisplayKey, Mode=TwoWay}" />
 
+        
         <CheckBox Grid.Column="2"
                   Style="{StaticResource ModernCheckBox}"
                   Foreground="White"
@@ -41,7 +47,7 @@
                 <TextBlock
                     Style="{StaticResource UnderlinedTextBlockStyle}"
                     Text="Skill Aimed by WASD Direction"
-                    Tag="When checked, this skill fires in your WASD movement direction instead of at the virtual mouse cursor.&#10;&#10;Use it to simulate rolls or movement skills (e.g., PoE2 ‘roll’) while still allowing other cursor-aimed abilities independently."
+                    Tag="When checked, this skill fires in your WASD movement direction instead of at the virtual mouse cursor.&#10;&#10;Use it to simulate rolls or movement skills, such as the PoE2 'roll', while still allowing other cursor-aimed abilities independently."
                     />
             </CheckBox.Content>
             

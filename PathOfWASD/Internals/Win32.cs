@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace PathOfWASD.Internals;
 
@@ -33,7 +33,7 @@ public static class Win32
         [StructLayout(LayoutKind.Sequential)]
         public struct INPUT
         {
-            public int type;           
+            public int type;          
             public InputUnion U;
         }
 
@@ -207,10 +207,9 @@ public static class Win32
         public const int WM_XBUTTONDOWN = 0x020B;
         public const int WM_XBUTTONUP = 0x020C;
         
-        public const ulong MY_TAG = 0x41414141;
-        public const ulong MY_WOMBO = 0x41414141; 
-
-        public const ulong LITERAL_TAG   = 0x42424242; 
+        public const ulong PlaceholderInjectionTag = 0x41414141;
+        public const ulong DirectionalRestoreInjectionTag = 0x41414141;
+        public const ulong LiteralInjectionTag = 0x42424242;
         
         public const int INPUT_KEYBOARD = 1;
         public const uint KEYEVENTF_KEYUP = 0x0002;
@@ -218,7 +217,7 @@ public static class Win32
         [StructLayout(LayoutKind.Explicit)]
         public struct InputUnion
         {
-            [FieldOffset(0)] public MOUSEINPUT mi;    
+            [FieldOffset(0)] public MOUSEINPUT mi;     
             [FieldOffset(0)] public KEYBDINPUT ki;
         }
     
@@ -227,8 +226,8 @@ public static class Win32
         public struct KEYBDINPUT
         {
             public ushort wVk;       
-            public ushort wScan;   
-            public uint   dwFlags;    
+            public ushort wScan;     
+            public uint   dwFlags;   
             public uint   time;      
             public UIntPtr dwExtraInfo;
         }

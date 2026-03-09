@@ -1,4 +1,4 @@
-﻿namespace PathOfWASD.Managers.Interfaces;
+namespace PathOfWASD.Managers.Interfaces;
 
 public interface ISystemCursorManager
 {

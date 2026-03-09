@@ -1,27 +1,34 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using PathOfWASD.Internals;
 using PathOfWASD.Managers.Cursor.Interfaces;
-using PathOfWASD.Overlays.Cursor;
+using PathOfWASD.Overlays.Cursor.Interfaces;
 using PathOfWASD.Overlays.Settings.Models;
 using WindowsInput;
 using Application = System.Windows.Application;
 
 namespace PathOfWASD.Managers.Cursor;
 
+/// <summary>
+/// Owns the virtual-cursor coordinates and the real-cursor lock and unlock flow.
+/// </summary>
 public class CursorManager
 {
     private bool _startInputHandler = true;
 
     public bool UserControlsRealCursor = false;
-    private RawMouseInputHandler _inputHandler; 
-    private readonly CursorOverlay _overlayWindow; 
+    private RawMouseInputHandler _inputHandler;
+
+    private readonly ICursorOverlay _overlayWindow;
     
     private readonly InputSimulator _sim = new();
     public ICursorState State { get; }
     
+    /// <summary>
+    /// Creates the cursor manager and waits for the renderer to create its native window.
+    /// </summary>
     public CursorManager(
-        CursorOverlay overlay,
+        ICursorOverlay overlay,
         ICursorState state)
     {
         _overlayWindow = overlay;
@@ -30,6 +37,9 @@ public class CursorManager
         _overlayWindow.SourceInitialized += OnSourceInitialized;
     }
     
+    /// <summary>
+    /// Starts raw mouse input once the renderer has created its native window.
+    /// </summary>
     private void OnSourceInitialized(object sender, EventArgs e)
     {
         _inputHandler = new RawMouseInputHandler(OnMouseMoved);
@@ -38,15 +48,21 @@ public class CursorManager
         _overlayWindow.SourceInitialized -= OnSourceInitialized;
     }
     
+    /// <summary>
+    /// Moves the real cursor to the current virtual-cursor position.
+    /// </summary>
     public async Task JumpToVirtualCursor()
     {
-        int vitX = (int)Math.Round(State.VirtualX * State.DpiScaleX);
-        int vitY = (int)Math.Round(State.VirtualY * State.DpiScaleY);
-        Win32.SetCursorPos(vitX, vitY);
+        int virtualPixelX = (int)Math.Round(State.VirtualX * State.DpiScaleX);
+        int virtualPixelY = (int)Math.Round(State.VirtualY * State.DpiScaleY);
+        Win32.SetCursorPos(virtualPixelX, virtualPixelY);
         
 
     }
 
+    /// <summary>
+    /// Returns control to the real cursor and hides the virtual cursor renderer.
+    /// </summary>
     public async Task UnlockRealCursor(bool isClick = false)
     {
         await JumpToVirtualCursor();
@@ -59,13 +75,14 @@ public class CursorManager
         await Task.CompletedTask;
     }
     
+    /// <summary>
+    /// Stops virtual-cursor mode and tears down the supporting hooks.
+    /// </summary>
     public async Task StopUnlockRealCursor()
     {
-
         await JumpToVirtualCursor();
         UserControlsRealCursor = true;
         
-
           Application.Current.Dispatcher.Invoke(() =>
           {
               _overlayWindow.HideOverlay(CursorMode.ShowDuringSkills, true);
@@ -80,17 +97,20 @@ public class CursorManager
         await Task.CompletedTask;
     }
     
+    /// <summary>
+    /// Enters virtual-cursor mode and shows the active renderer.
+    /// </summary>
     public async Task LockRealCursor(bool leftMouse = false, bool rightMouse = false, bool fromToggle = false)
     {
-        var hugeMeatX = 0.0;
-        var hugeMeatY = 0.0;
+        var initialVirtualX = 0.0;
+        var initialVirtualY = 0.0;
         if (State.VirtualX == 0 || State.VirtualY == 0)
         {
             Win32.GetCursorPos(out Win32.POINT p);
             State.VirtualX = p.X / State.DpiScaleX;
             State.VirtualY = p.Y / State.DpiScaleY;
-            hugeMeatX = State.VirtualX;
-            hugeMeatY = State.VirtualY;
+            initialVirtualX = State.VirtualX;
+            initialVirtualY = State.VirtualY;
         }
         
 
@@ -108,7 +128,7 @@ public class CursorManager
         Application.Current.Dispatcher.Invoke(() =>
         {
             _overlayWindow.ShowOverlay(fromToggle ? CursorMode.ShowDuringSkills : State.CursorMode);
-            if (hugeMeatX != 0.0 || hugeMeatY != 0.0)
+            if (initialVirtualX != 0.0 || initialVirtualY != 0.0)
             {
                 _overlayWindow.UpdateCursorPosition(State.VirtualX, State.VirtualY, UserControlsRealCursor, State.XCursorCenterAdjustment, State.YCursorCenterAdjustment);
             }
@@ -117,6 +137,9 @@ public class CursorManager
 
     }
     
+    /// <summary>
+    /// Moves the real cursor to the configured midpoint plus any active WASD offset.
+    /// </summary>
     public async Task SetDirectionalCursorPosition(List<Key> wasdKeys)
     {
         double offset = State.Offset;
@@ -129,19 +152,19 @@ public class CursorManager
 
         if (wasdKeys.Contains(Key.W))
         {
-            targetY = middleY - offset; 
+            targetY = middleY - offset;
         }
         if (wasdKeys.Contains(Key.S))
         {
-            targetY = middleY + offset; 
+            targetY = middleY + offset;
         }
         if (wasdKeys.Contains(Key.A))
         {
-            targetX = middleX - offset; 
+            targetX = middleX - offset;
         }
         if (wasdKeys.Contains(Key.D))
         {
-            targetX = middleX + offset; 
+            targetX = middleX + offset;
         }
 
         State.RealX = targetX;
@@ -153,6 +176,9 @@ public class CursorManager
         Win32.SetCursorPos((int)realX, (int)realY);
     }
 
+    /// <summary>
+    /// Applies raw mouse deltas to the virtual cursor and forwards the result to the renderer.
+    /// </summary>
     private void OnMouseMoved(int deltaX, int deltaY)
     {
         if (_startInputHandler)

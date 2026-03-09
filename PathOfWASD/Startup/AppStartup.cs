@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,6 +32,9 @@ using Application = System.Windows.Application;
 
 namespace PathOfWASD.Startup
 {
+    /// <summary>
+    /// Centralizes process startup, cursor asset bootstrapping, and dependency registration.
+    /// </summary>
     public static class AppStartup
     {
         private const string MutexName = "Global\\PathOfWASD_Mutex";
@@ -41,7 +44,10 @@ namespace PathOfWASD.Startup
 
         [DllImport("user32.dll")]
         private static extern bool SetProcessDpiAwarenessContext(IntPtr dpiContext);
-        
+
+        /// <summary>
+        /// Ensures only one copy of the application remains active.
+        /// </summary>
         public static void EnsureSingleInstance()
         {
             bool createdNew;
@@ -70,9 +76,15 @@ namespace PathOfWASD.Startup
                 );
             }
         }
-        
+
+        /// <summary>
+        /// Enables Per-Monitor v2 DPI awareness before any windows are created.
+        /// </summary>
         public static void ConfigureDpi() => SetProcessDpiAwarenessContext(DPI_AWARE_CTX);
-        
+
+        /// <summary>
+        /// Copies the bundled default cursor into the LocalAppData cursor slot on first run.
+        /// </summary>
         public static void EnsureCursorFile()
         {
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -92,7 +104,9 @@ namespace PathOfWASD.Startup
             }
         }
 
-
+        /// <summary>
+        /// Registers the application's view models, overlays, managers, and hooks in DI.
+        /// </summary>
         public static IServiceProvider ConfigureServices()
         {
             var sc = new ServiceCollection();
@@ -105,7 +119,7 @@ namespace PathOfWASD.Startup
             sc.AddSingleton<IWpfDpiProvider, WpfDpiProvider>();
             sc.AddSingleton<ISystemCursorManager, SystemCursorManager>();
 
-            sc.AddSingleton<CursorOverlay>();
+            sc.AddSingleton<ICursorOverlay, NativeCursorOverlay>();
 
             sc.AddSingleton<IKeyboardMouseEvents>(_ => Hook.GlobalEvents());
             sc.AddSingleton<IKeyStateTracker, KeyStateTracker>();
@@ -141,7 +155,10 @@ namespace PathOfWASD.Startup
 
             return sc.BuildServiceProvider();
         }
-        
+
+        /// <summary>
+        /// Executes the startup sequence used by <c>App.OnStartup</c>.
+        /// </summary>
         public static IServiceProvider Startup()
         {
             EnsureSingleInstance();

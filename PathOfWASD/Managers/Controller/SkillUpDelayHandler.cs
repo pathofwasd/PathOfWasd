@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using PathOfWASD.Managers.Controller.Interfaces;
 
 namespace PathOfWASD.Managers.Controller;

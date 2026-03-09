@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using System.Windows.Input;
 using PathOfWASD.Helpers;
 using PathOfWASD.Managers.Controller.Interfaces;
@@ -7,31 +7,46 @@ using WindowsInput.Native;
 
 namespace PathOfWASD.Managers.Controller;
 
+/// <summary>
+/// Exposes the derived controller state used by the controller event pipeline.
+/// </summary>
 public class ControllerState : IControllerState
 {
     private readonly IKeyStateTracker _tracker;
     private readonly Lazy<ControllerManager> _manager;
-    private readonly InputSimulator _sim = new(); 
+    private readonly InputSimulator _sim = new();
     
     private static readonly Key[] WASDKeys = { Key.W, Key.A, Key.S, Key.D };
 
+    /// <summary>
+    /// Creates the controller state wrapper around held-key tracking and manager state.
+    /// </summary>
     public ControllerState(IKeyStateTracker tracker, Lazy<ControllerManager> manager)
     {
         _tracker = tracker;
         _manager = manager;
     }
 
+    /// <summary>
+    /// Holds the stand-still key.
+    /// </summary>
     public async Task StandInPlace()
     {
         _sim.Keyboard.KeyDown(StandKey);
         await Task.CompletedTask;
     }
     
+    /// <summary>
+    /// Releases the stand-still key.
+    /// </summary>
     public async Task DontStandInPlace()
     {
         _sim.Keyboard.KeyUp(StandKey);
     }
     
+    /// <summary>
+    /// Holds the movement key when at least one WASD key is active.
+    /// </summary>
     public async Task MovePlace()
     {
         if (Helper.IsWasdKeyDown())
@@ -41,6 +56,9 @@ public class ControllerState : IControllerState
         await Task.CompletedTask;
     }
     
+    /// <summary>
+    /// Releases the movement key.
+    /// </summary>
     public async Task DontMovePlace()
     {
         _sim.Keyboard.KeyUp(MovementKey);

@@ -1,4 +1,4 @@
-﻿namespace PathOfWASD.Managers.Controller.Interfaces;
+namespace PathOfWASD.Managers.Controller.Interfaces;
 
 public interface ISkillUpDelayHandler
 {

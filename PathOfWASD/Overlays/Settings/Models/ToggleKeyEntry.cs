@@ -1,14 +1,12 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using PathOfWASD.Overlays.BGFunctionalities;
 using WindowsInput.Native;
 
 namespace PathOfWASD.Overlays.Settings.Models
 {
-
     public class ToggleKeyEntry : INotifyPropertyChanged
     {
         private KeyPair _keyPair;
-
         public KeyPair SelectedKey
         {
             get => _keyPair;
@@ -23,7 +21,6 @@ namespace PathOfWASD.Overlays.Settings.Models
         }
 
         private bool _isDirectional;
-
         public bool IsDirectional
         {
             get => _isDirectional;

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -34,15 +34,15 @@ namespace PathOfWASD.Overlays.BGFunctionalities
             HorizontalContentAlignment = HorizontalAlignment.Center;
             VerticalContentAlignment = VerticalAlignment.Center;
 
-            Background = new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF)); 
+            Background = new SolidColorBrush(Color.FromArgb(0x60, 0xFF, 0xFF, 0xFF));
             Foreground = Brushes.White;
-            BorderBrush = new SolidColorBrush(Color.FromRgb(136, 136, 136)); 
+            BorderBrush = new SolidColorBrush(Color.FromRgb(136, 136, 136));
             BorderThickness = new Thickness(1);
             Padding = new Thickness(6, 2, 6, 2);
             FontSize = 13;
             CaretBrush = Brushes.White;
             Cursor = Cursors.Hand;
-            CornerRadius radius = new CornerRadius(4); 
+            CornerRadius radius = new CornerRadius(4);
 
             GotKeyboardFocus += (_, __) =>
             {
@@ -52,7 +52,7 @@ namespace PathOfWASD.Overlays.BGFunctionalities
 
             PreviewKeyDown += (_, e) =>
             {
-                SelectedKey = e.Key; 
+                SelectedKey = e.Key;
                 Keyboard.ClearFocus();
                 e.Handled = true;
             };

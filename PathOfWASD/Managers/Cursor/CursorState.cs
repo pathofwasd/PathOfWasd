@@ -1,4 +1,4 @@
-﻿using PathOfWASD.Helpers;
+using PathOfWASD.Helpers;
 using PathOfWASD.Helpers.Interfaces;
 using PathOfWASD.Internals;
 using PathOfWASD.Managers.Cursor.Interfaces;
@@ -25,6 +25,6 @@ public class CursorState : ICursorState
     public int YCursorCenterAdjustment { get; set; }
     public Win32.POINT MidPoint { get; set; }
     public double Sensitivity { get; set; } = 1.0;
-    public CursorMode CursorMode { get; set; } 
+    public CursorMode CursorMode { get; set; }
     public double Offset { get; set; } = 1000;
 }

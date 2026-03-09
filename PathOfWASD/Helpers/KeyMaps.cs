@@ -1,11 +1,10 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using WindowsInput.Native;
 
 namespace PathOfWASD.Helpers;
 
 public static class KeyMaps
 {
-
 
         public static readonly List<Key> MasterWpfKeys;
         public static readonly List<VirtualKeyCode> AvailableVirtualKeys;

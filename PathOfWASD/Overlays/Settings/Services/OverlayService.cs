@@ -1,28 +1,30 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Gma.System.MouseKeyHook;
 using Hardcodet.Wpf.TaskbarNotification;
-using PathOfWASD.Helpers; 
+using PathOfWASD.Helpers;
 using PathOfWASD.Managers;
 using PathOfWASD.Managers.Controller;
 using PathOfWASD.Managers.Cursor;
-using PathOfWASD.Overlays.BGFunctionalities; 
-using PathOfWASD.Overlays.Cursor;
+using PathOfWASD.Overlays.BGFunctionalities;
 using PathOfWASD.Overlays.Cursor.CenterCursor;
 using PathOfWASD.Overlays.Cursor.Interfaces;
-using PathOfWASD.Overlays.Settings.Views;           
-using PathOfWASD.Overlays.Settings.ViewModels;      
+using PathOfWASD.Overlays.Settings.Views;          
+using PathOfWASD.Overlays.Settings.ViewModels;     
 using Application = System.Windows.Application;
 
 namespace PathOfWASD.Overlays.Settings.Services
 {
+    /// <summary>
+    /// Coordinates the settings window, runtime overlays, tray actions, and hotkey rebinding.
+    /// </summary>
     public class OverlayService : IDisposable
     {
         public ICommand ToggleOverlayCommand { get; }
         public ICommand ExitCommand { get; }
 
         private readonly SettingsOverlay _settingsOverlay;
-        private readonly CursorOverlay _cursorOverlay;
+        private readonly ICursorOverlay _cursorOverlay;
         private readonly CursorCenterOverlay _cursorCenterOverlay;
         private readonly CursorManager _cursorManager;
         private readonly ControllerManager _controllerManager;
@@ -36,9 +38,12 @@ namespace PathOfWASD.Overlays.Settings.Services
         private readonly ICursorImageLoader _imageLoader;
         private bool _isOff = true;
 
+        /// <summary>
+        /// Creates the runtime service that wires UI events into cursor and controller state.
+        /// </summary>
         public OverlayService(
             SettingsOverlay settingsOverlay,
-            CursorOverlay cursorOverlay,
+            ICursorOverlay cursorOverlay,
             CursorCenterOverlay cursorCenterOverlay,
             IKeyboardMouseEvents globalHook,
             CursorManager cursorManager,
@@ -69,22 +74,23 @@ namespace PathOfWASD.Overlays.Settings.Services
             vm.ToggleVisualCursorRequested += async () => await ToggleVirtualCursor();
             vm.HoldToggleVisualCursorRequested += async () => await HandleHold(vm);
             vm.CenterOverlayRequested += () => CenterCursorMode(vm);
-            _cursorCenterOverlay.Loaded += (_, __) =>
-            {
-                UpdateCursorOverlay(vm);
-                UpdateCenterCursorSize(vm);
-            };
 
-            vm.CursorCenterChanged += () => UpdateCursorOverlay(vm);
+            SyncCursorRuntimePlacement(vm);
+            UpdateCursorOverlay(vm);
+            UpdateCenterCursorSize(vm);
+
+            vm.CursorCenterChanged += () =>
+            {
+                SyncCursorRuntimePlacement(vm);
+                UpdateCursorOverlay(vm);
+            };
 
             vm.VirtualCursorChanged += () =>
             {
                 UploadCursor();
             };
-            
-            _cursorOverlay.Loaded += (_,__)=>
-                UpdateCursorSize(vm);
-            
+            UpdateCursorSize(vm);
+
             vm.CursorSizeChanged += () =>
             {
                 UpdateCursorSize(vm);
@@ -96,9 +102,14 @@ namespace PathOfWASD.Overlays.Settings.Services
             _hotkeyController.RebindOnToOffWASDMode();
         }
 
-
+        /// <summary>
+        /// Shows the settings window and synchronizes the managers with its current values.
+        /// </summary>
         public void Initialize() => ShowSettingsOverlay();
 
+        /// <summary>
+        /// Saves settings and shuts down the application.
+        /// </summary>
         private void Exit(SettingsViewModel vm)
         {
             vm.SaveCommand.Execute(null);
@@ -107,6 +118,9 @@ namespace PathOfWASD.Overlays.Settings.Services
             Application.Current.Shutdown();
         }
 
+        /// <summary>
+        /// Toggles the main virtual-cursor mode on or off.
+        /// </summary>
         private async Task ToggleVirtualCursor()
         {
             if (_isLocked)
@@ -121,6 +135,9 @@ namespace PathOfWASD.Overlays.Settings.Services
             }
         }
 
+        /// <summary>
+        /// Temporarily disables the virtual cursor while the hold key remains pressed.
+        /// </summary>
         private async Task HandleHold(SettingsViewModel vm)
         {
             if (_holdInProgress) return;
@@ -140,19 +157,28 @@ namespace PathOfWASD.Overlays.Settings.Services
                 _holdInProgress = false;
             }
         }
-        
+
+        /// <summary>
+        /// Applies settings changes to runtime managers and rebinds hotkeys.
+        /// </summary>
         private void OnSettingsChanged(SettingsViewModel vm)
         {
             UpdateManagers(vm);
             _hotkeyController.Rebind();
         }
 
+        /// <summary>
+        /// Shows the settings overlay and refreshes runtime state from its current view model.
+        /// </summary>
         private void ShowSettingsOverlay()
         {
             _settingsOverlay.Show();
             UpdateManagers((SettingsViewModel)_settingsOverlay.DataContext);
         }
 
+        /// <summary>
+        /// Switches into virtual-cursor mode and reenables input remapping.
+        /// </summary>
         private async Task ActivateVirtualCursor()
         {
             _isLocked = true;
@@ -162,12 +188,15 @@ namespace PathOfWASD.Overlays.Settings.Services
             _hotkeyController.Rebind();
         }
 
+        /// <summary>
+        /// Switches out of virtual-cursor mode and restores normal input handling.
+        /// </summary>
         private async Task DeactivateVirtualCursor()
         {
             _isLocked = false;
             await _cursorManager.JumpToVirtualCursor();
             await _controllerManager.State.DontMovePlace();
-            await Task. Delay(100);
+            await Task.Delay(100);
             await _controllerManager.State.DontStandInPlace();
             await _cursorManager.StopUnlockRealCursor();
             _mouseClickKeyMapper.SkipLogic = true;
@@ -175,6 +204,9 @@ namespace PathOfWASD.Overlays.Settings.Services
             _hotkeyController.RebindOnToOffWASDMode();
         }
         
+        /// <summary>
+        /// Pushes the current settings values into the cursor and controller runtime state.
+        /// </summary>
         private void UpdateManagers(SettingsViewModel vm)
         {
             var toggleKeys = Helper.GetFKeyMaps(vm);
@@ -199,6 +231,9 @@ namespace PathOfWASD.Overlays.Settings.Services
 
         }
         
+        /// <summary>
+        /// Toggles the midpoint-preview cursor.
+        /// </summary>
         private void CenterCursorMode(SettingsViewModel vm)
         {
             if (_centerOverlayOn)
@@ -212,41 +247,69 @@ namespace PathOfWASD.Overlays.Settings.Services
                 _centerOverlayOn = true;
             }
         }
-        
-    private void UpdateCursorOverlay(SettingsViewModel vm)
-    {
-        _cursorCenterOverlay.UpdateCursorPosition(vm.XCursorCenter, vm.YCursorCenter, vm.MidPoint.X, vm.MidPoint.Y);
-    }
-    
-    private void UpdateCursorSize(SettingsViewModel vm)
-    {
-        _cursorOverlay.UpdateCursorSize(vm.CursorSize, vm.CursorSize);
-    }
-    
-    private async void UploadCursor()
-    {
-        var dlg = new Microsoft.Win32.OpenFileDialog
-        {
-            Filter = "PNG image|*.png",
-            Title  = "Choose a custom cursor (PNG only)"
-        };
-        if (dlg.ShowDialog() != true) return;
 
-        _imageLoader.SaveFromFile(dlg.FileName);
+        /// <summary>
+        /// Keeps the runtime cursor state aligned with midpoint edits in the settings UI.
+        /// </summary>
+        private void SyncCursorRuntimePlacement(SettingsViewModel vm)
+        {
+            _cursorManager.State.MidPoint = vm.MidPoint;
+            _cursorManager.State.XCursorCenterAdjustment = vm.XCursorCenter;
+            _cursorManager.State.YCursorCenterAdjustment = vm.YCursorCenter;
+        }
         
-        _cursorOverlay.ReloadCursorImage();
-        _cursorCenterOverlay.ReloadCursorImage();
-    }
-    
-    private void UpdateCenterCursorSize(SettingsViewModel vm)
-    {
-        _cursorCenterOverlay.UpdateCursorSize(vm.CursorSize, vm.CursorSize);
-    }
+        /// <summary>
+        /// Updates the midpoint-preview cursor position from the current settings values.
+        /// </summary>
+        private void UpdateCursorOverlay(SettingsViewModel vm)
+        {
+            _cursorCenterOverlay.UpdateCursorPosition(vm.XCursorCenter, vm.YCursorCenter, vm.MidPoint.X, vm.MidPoint.Y);
+        }
+        
+        /// <summary>
+        /// Applies the current cursor size to the main runtime renderer.
+        /// </summary>
+        private void UpdateCursorSize(SettingsViewModel vm)
+        {
+            _cursorOverlay.UpdateCursorSize(vm.CursorSize, vm.CursorSize);
+        }
+        
+        /// <summary>
+        /// Prompts for a new PNG cursor and reloads every active cursor renderer.
+        /// </summary>
+        private async void UploadCursor()
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "PNG image|*.png",
+                Title  = "Choose a custom cursor (PNG only)"
+            };
+            if (dlg.ShowDialog() != true) return;
+
+            _imageLoader.SaveFromFile(dlg.FileName);
+            
+            _cursorOverlay.ReloadCursorImage();
+            _cursorCenterOverlay.ReloadCursorImage();
+        }
+        
+        /// <summary>
+        /// Applies the current cursor size to the midpoint-preview renderer.
+        /// </summary>
+        private void UpdateCenterCursorSize(SettingsViewModel vm)
+        {
+            _cursorCenterOverlay.UpdateCursorSize(vm.CursorSize, vm.CursorSize);
+        }
+
+        /// <summary>
+        /// Disposes the runtime hooks and overlay windows owned by the service.
+        /// </summary>
         public void Dispose()
         {
             _hotkeyController?.Dispose();
             _mouseClickKeyMapper?.Stop();
             _globalHook.Dispose();
+            _cursorOverlay.Dispose();
+            _cursorCenterOverlay.Dispose();
         }
     }
 }

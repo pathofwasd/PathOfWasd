@@ -1,4 +1,4 @@
-﻿using System.Threading.Channels;
+using System.Threading.Channels;
 using PathOfWASD.Managers.Controller.Interfaces;
 
 namespace PathOfWASD.Managers.Controller;

@@ -1,4 +1,4 @@
-﻿using System.Threading.Channels;
+using System.Threading.Channels;
 using System.Windows.Input;
 using PathOfWASD.Managers.Controller.Interfaces;
 using PathOfWASD.Managers.Cursor;
@@ -10,6 +10,9 @@ namespace PathOfWASD.Managers.Controller
 
     public record KeyEvent(KeyAction Action, Key Key, TaskCompletionSource<object> Tcs);
 
+    /// <summary>
+    /// Serializes controller-related key events and translates them into cursor and movement actions.
+    /// </summary>
     public class ControllerManager
     {
         private readonly Channel<KeyEvent> _channel;
@@ -30,6 +33,9 @@ namespace PathOfWASD.Managers.Controller
         public Dictionary<Key, CancellationTokenSource> PendingSkillUpCts { get; } = new();
         public Dictionary<Key, DateTime> SkillDownTimes { get; } = new();
         
+        /// <summary>
+        /// Clears held-key and delayed-movement state after a rebind or mode switch.
+        /// </summary>
         public void ClearStates()
         {
             _tracker.Clear();
@@ -38,13 +44,16 @@ namespace PathOfWASD.Managers.Controller
             _delayMovementUpState.MovementStarted = false;
         }
         
-        public ControllerManager(Lazy<IEventProcessor> eventProcessor, IKeyStateTracker tracker,    CursorManager cursorManager,
+        /// <summary>
+        /// Creates the controller manager and starts the background event-processing loop.
+        /// </summary>
+        public ControllerManager(Lazy<IEventProcessor> eventProcessor, IKeyStateTracker tracker, CursorManager cursorManager,
             IControllerState controllerState, DelayMovementUpState delayMovementUpState)
         {
             _eventProcessor = eventProcessor;
             _tracker = tracker;
             _cursorManager = cursorManager;
-            State = controllerState; 
+            State = controllerState;
             _delayMovementUpState = delayMovementUpState;
             _channel = Channel.CreateBounded<KeyEvent>(new BoundedChannelOptions(2)
             {
@@ -55,6 +64,9 @@ namespace PathOfWASD.Managers.Controller
             _ = Task.Run(() => _eventProcessor.Value.ProcessLoopAsync(_channel.Reader, _tracker));
         }
 
+        /// <summary>
+        /// Routes one logical key event into the skill, directional-skill, or movement pipeline.
+        /// </summary>
         public async Task ProcessEventAsync(KeyEvent evt)
         {
             if (!ToggleKeys.Contains(Key.Pa1))
@@ -90,7 +102,7 @@ namespace PathOfWASD.Managers.Controller
                 if (State.IncomingWASD)
                     await PerformIncomingWasdTaskAsync(true);
             }
-            else 
+            else
             {
                 if (State.IncomingSkill && !State.AnyOtherSkillIsCurrentlyHeldDown)
                 {
@@ -138,6 +150,9 @@ namespace PathOfWASD.Managers.Controller
             }
         }
 
+        /// <summary>
+        /// Handles the transition from idle or movement into skill-cast mode.
+        /// </summary>
         private async Task PerformIncomingSkillDownTaskAsync(bool dontMoveOverride = false)
         {
             if (_delayMovementUpState.HasThresholdPassed())
@@ -157,6 +172,9 @@ namespace PathOfWASD.Managers.Controller
             await _cursorManager.UnlockRealCursor(IsClick);
         }
         
+        /// <summary>
+        /// Handles the transition from skill-cast mode back into cursor-locked mode.
+        /// </summary>
         private async Task PerformIncomingSkillUpTaskAsync()
         {
             if (_delayMovementUpState.CanGoUp)
@@ -170,6 +188,9 @@ namespace PathOfWASD.Managers.Controller
             await _cursorManager.LockRealCursor();
         }
 
+        /// <summary>
+        /// Applies directional movement and optional cursor repositioning for held WASD keys.
+        /// </summary>
         private async Task PerformIncomingWasdTaskAsync(bool delayBeforeMove = false, bool trumpSkill = false)
         {
             if (State.AnySkillDown && !trumpSkill) return;
@@ -185,9 +206,19 @@ namespace PathOfWASD.Managers.Controller
             _delayMovementUpState.StartMovement();
         }
 
+        /// <summary>
+        /// Enqueues a key-down event for background processing.
+        /// </summary>
         public Task HandleKeyDownAsync(Key key, bool altMode) => EnqueueEvent(KeyAction.Down, key, altMode);
-        public Task HandleKeyUpAsync  (Key key, bool altMode) => EnqueueEvent(KeyAction.Up,   key, altMode);
 
+        /// <summary>
+        /// Enqueues a key-up event for background processing.
+        /// </summary>
+        public Task HandleKeyUpAsync(Key key, bool altMode) => EnqueueEvent(KeyAction.Up, key, altMode);
+
+        /// <summary>
+        /// Writes a key event into the bounded channel used by the event processor.
+        /// </summary>
         private Task EnqueueEvent(KeyAction action, Key key, bool altMode)
         {
             _altMode = altMode;

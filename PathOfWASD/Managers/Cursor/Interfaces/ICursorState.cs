@@ -1,4 +1,4 @@
-﻿using PathOfWASD.Internals;
+using PathOfWASD.Internals;
 using PathOfWASD.Overlays.Settings.Models;
 using WindowsInput.Native;
 

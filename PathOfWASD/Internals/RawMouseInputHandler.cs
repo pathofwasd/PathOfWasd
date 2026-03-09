@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -29,7 +29,6 @@ public class RawMouseInputHandler
                 Width = 0,
                 Height = 0
             };
-
             var helper     = new WindowInteropHelper(Application.Current.MainWindow);
             _hwndSource    = HwndSource.FromHwnd(helper.Handle)
                              ?? throw new InvalidOperationException("Couldn't get HwndSource");
@@ -53,9 +52,9 @@ public class RawMouseInputHandler
         {
             var rid = new Win32.RAWINPUTDEVICE[1];
             rid[0].usUsagePage = 0x01;
-            rid[0].usUsage = 0x02; 
-            rid[0].dwFlags = 0x00000100; 
-            rid[0].hwndTarget = hwnd; 
+            rid[0].usUsage = 0x02;
+            rid[0].dwFlags = 0x00000100;
+            rid[0].hwndTarget = hwnd;
 
             if (!Win32.RegisterRawInputDevices(rid, 1, (uint)Marshal.SizeOf(typeof(Win32.RAWINPUTDEVICE))))
             {

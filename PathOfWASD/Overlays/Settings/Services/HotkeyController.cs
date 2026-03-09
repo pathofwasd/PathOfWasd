@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
@@ -12,9 +12,12 @@ using PathOfWASD.Overlays.Settings.ViewModels;
 using WindowsInput;
 using WindowsInput.Native;
 
+
 namespace PathOfWASD.Overlays.Settings.Services
 {
-
+    /// <summary>
+    /// Owns global hotkey registration, low-level keyboard interception, and skill remapping.
+    /// </summary>
     public class HotkeyController : IDisposable
     {
         private readonly HashSet<VirtualKeyCode> _physicalPressed = new();
@@ -24,7 +27,6 @@ namespace PathOfWASD.Overlays.Settings.Services
         private readonly SettingsViewModel _viewModel;
         private readonly Dictionary<int, Action> _callbacks = new();
         private readonly Dictionary<VirtualKeyCode, Action> _releaseCallbacks = new();
-        private int _nextId = 0;
 
         private readonly Dictionary<int, VirtualKeyCode> _idToKey = new();
         private readonly Dictionary<VirtualKeyCode, Action> _literalDownCallbacks = new();
@@ -34,48 +36,40 @@ namespace PathOfWASD.Overlays.Settings.Services
         private Win32.LowLevelKeyboardProc _keyboardProc;
         private IntPtr _keyboardHookId;
 
-        private List<Key> currentSkillsHeldDownDuringDirectionDown = new();
+        private List<Key> _suspendedSkillsDuringDirectionalInput = new();
         private readonly Dictionary<VirtualKeyCode, Action> _skillDownCallbacks = new();
 
         private readonly Dictionary<VirtualKeyCode, VirtualKeyCode> _swapMap
             = new Dictionary<VirtualKeyCode, VirtualKeyCode>();
         private readonly Dictionary<VirtualKeyCode, TaskCompletionSource<bool>> _releaseTcs
             = new Dictionary<VirtualKeyCode, TaskCompletionSource<bool>>();
-        private List<VirtualKeyCode> womboKeysUp = new List<VirtualKeyCode>();
-        private void InjectTaggedKeyDown(VirtualKeyCode vk)   => InjectKey(vk, 0, Win32.MY_TAG);
-        private void InjectTaggedKeyUp  (VirtualKeyCode vk)   => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.MY_TAG);
-        private void InjectWomboKeyUp  (VirtualKeyCode vk)
+        private List<VirtualKeyCode> _pendingDirectionalRestoreKeys = new();
+        private void InjectPlaceholderKeyDown(VirtualKeyCode vk) => InjectKey(vk, 0, Win32.PlaceholderInjectionTag);
+        private void InjectPlaceholderKeyUp(VirtualKeyCode vk) => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.PlaceholderInjectionTag);
+        private void InjectDirectionalRestoreKeyUp(VirtualKeyCode vk)
         {
-            if (!womboKeysUp.Contains(vk))
+            if (!_pendingDirectionalRestoreKeys.Contains(vk))
             {
-
-                womboKeysUp.Add(vk);
-                InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.MY_WOMBO);
+                _pendingDirectionalRestoreKeys.Add(vk);
+                InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.DirectionalRestoreInjectionTag);
             }
         }
 
-        private void InjectLiteralKeyDown(VirtualKeyCode vk)  => InjectKey(vk, 0, Win32.LITERAL_TAG);
-        private async Task InjectWomboKeyDown(VirtualKeyCode vk)
+        private void InjectLiteralKeyDown(VirtualKeyCode vk) => InjectKey(vk, 0, Win32.LiteralInjectionTag);
+        private async Task InjectDirectionalRestoreKeyDown(VirtualKeyCode vk)
         {
-            if (womboKeysUp.Contains(vk))
+            if (_pendingDirectionalRestoreKeys.Contains(vk))
             {
                 await Task.Delay(40);
-                womboKeysUp.Remove(vk);
-                InjectKey(vk, 0, Win32.MY_WOMBO);
-
-            }
-            else
-            {
+                _pendingDirectionalRestoreKeys.Remove(vk);
+                InjectKey(vk, 0, Win32.DirectionalRestoreInjectionTag);
             }
         }
 
-        private void InjectLiteralKeyUp  (VirtualKeyCode vk)  => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.LITERAL_TAG);
+        private void InjectLiteralKeyUp(VirtualKeyCode vk) => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.LiteralInjectionTag);
 
         private void InjectKey(VirtualKeyCode vk, uint flags, ulong tag)
         {
-            if (tag == Win32.LITERAL_TAG)
-            {
-            }
             var input = new Win32.INPUT {
                 type = Win32.INPUT_KEYBOARD,
                 U = new Win32.InputUnion {
@@ -101,12 +95,14 @@ namespace PathOfWASD.Overlays.Settings.Services
             _controllerManager.ToggleKeys = new List<Key>(newKeys);
             _controllerManager.DirectionalKeys = new List<Key>(directionalNewKeys);
            RebindOnToOffWASDMode();
-
         }
         
         private readonly InputSimulator _sim = new();
         private bool _toggledOff;
 
+        /// <summary>
+        /// Creates the hotkey controller and delays hook setup until the settings window has an HWND.
+        /// </summary>
         public HotkeyController(Window window, SettingsViewModel viewModel, ControllerManager controllerManager)
         {
             _sim = new InputSimulator();
@@ -117,6 +113,9 @@ namespace PathOfWASD.Overlays.Settings.Services
             window.SourceInitialized += OnSourceInitialized; 
         }
         
+        /// <summary>
+        /// Finishes hook setup once the settings window has a native handle.
+        /// </summary>
         private void OnSourceInitialized(object sender, EventArgs e)
         {
             var window = (Window)sender;
@@ -138,14 +137,16 @@ namespace PathOfWASD.Overlays.Settings.Services
 
             window.SourceInitialized -= OnSourceInitialized; 
         }
-        
+
+        /// <summary>
+        /// Rebuilds all hotkey registrations using the current settings values.
+        /// </summary>
         public void Rebind()
         {
             foreach (var id in _callbacks.Keys.ToList())
                 Win32.UnregisterHotKey(_hwndSource.Handle, id);
             _callbacks.Clear();
             _idToKey.Clear();
-            _nextId = 0;
 
             _releaseCallbacks.Clear();
 
@@ -156,14 +157,15 @@ namespace PathOfWASD.Overlays.Settings.Services
             BindAll();
         }
         
-
+        /// <summary>
+        /// Rebuilds the hotkeys for the "virtual cursor disabled" state.
+        /// </summary>
         public void RebindOnToOffWASDMode()
         {
             foreach (var id in _callbacks.Keys.ToList())
                 Win32.UnregisterHotKey(_hwndSource.Handle, id);
             _callbacks.Clear();
             _idToKey.Clear();
-            _nextId = 0;
 
             _releaseCallbacks.Clear();
 
@@ -174,6 +176,9 @@ namespace PathOfWASD.Overlays.Settings.Services
             BindAll(true);
         }
 
+        /// <summary>
+        /// Registers the current swap map and resets any synthetic key state left from prior binds.
+        /// </summary>
         private void BindAll(bool skip = false)
         {
             if (!skip)
@@ -227,6 +232,9 @@ namespace PathOfWASD.Overlays.Settings.Services
         
         private bool AltMode => _viewModel.InvertAltMode ? Helper.IsKeyDown(Helper.ToVkKey(_viewModel.HoldToggleAltKey.VirtualKey)) : !Helper.IsKeyDown(Helper.ToVkKey(_viewModel.HoldToggleAltKey.VirtualKey));
         
+        /// <summary>
+        /// Builds the placeholder-key map for skill bindings and the fixed WASD handlers.
+        /// </summary>
         private void BindToggleEntries()
         {
             _swapMap.Clear();
@@ -249,7 +257,6 @@ namespace PathOfWASD.Overlays.Settings.Services
 
             BindMouseKeys();
             
-
             foreach (var wpfKey in new[] { Key.W, Key.A, Key.S, Key.D })
             {
                 _skillDownCallbacks[Helper.ToWinFormsKey(wpfKey)] = () =>
@@ -263,6 +270,9 @@ namespace PathOfWASD.Overlays.Settings.Services
             }
         }
 
+        /// <summary>
+        /// Registers the callback chain for one physical key and its placeholder binding.
+        /// </summary>
         private void RegisterCallbacks(Key selectedEntryKey, Key placeholderKey)
         {
             var physicalVk    = (VirtualKeyCode)KeyInterop.VirtualKeyFromKey(selectedEntryKey);
@@ -308,7 +318,6 @@ namespace PathOfWASD.Overlays.Settings.Services
 
                 _releaseCallbacks[placeholderVk] = () =>
                 {
-
                     if (_releaseTcs.TryGetValue(placeholderVk, out var src))
                     {
                         src.TrySetResult(true);
@@ -322,9 +331,7 @@ namespace PathOfWASD.Overlays.Settings.Services
             {
                   if (physicalVk == VirtualKeyCode.F23 && AltMode)
                   {
-                     
                       _sim.Mouse.LeftButtonDown();
-                      
                   }
                   if (physicalVk == VirtualKeyCode.F24 && AltMode)  
                   {
@@ -353,18 +360,17 @@ namespace PathOfWASD.Overlays.Settings.Services
         }
 
 
-private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode? placeholderVk = null, bool isClick = false)
+        /// <summary>
+        /// Runs the ordered mapped key-down pipeline: controller work, literal injection, then release wait.
+        /// </summary>
+        private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode? placeholderVk = null, bool isClick = false)
 {
-
-    
     if (!placeholderVk.HasValue)
     {
         placeholderVk = _swapMap[physicalVk];
     }
     var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-
-    
     _releaseCallbacks[placeholderVk.Value] = () =>
     {
         tcs.TrySetResult(true);
@@ -376,26 +382,25 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
         await HandleMappedKeyUp(physicalVk, placeholderVk.Value, isClick);
         return;
     }
-
     await Task.Delay(8);
-    var w = _controllerManager.DirectionalKeys.Contains(Helper.ToVkKey( placeholderVk.Value));
+    var isDirectionalSkill = _controllerManager.DirectionalKeys.Contains(Helper.ToVkKey(placeholderVk.Value));
     
-    if (_controllerManager.State.AnyOtherWASDIsCurrentlyHeldDown && w)
+    if (_controllerManager.State.AnyOtherWASDIsCurrentlyHeldDown && isDirectionalSkill)
     {
-        currentSkillsHeldDownDuringDirectionDown = _controllerManager.State.AllHeldSkillDown(_controllerManager.ToggleKeys);
+        _suspendedSkillsDuringDirectionalInput = _controllerManager.State.AllHeldSkillDown(_controllerManager.ToggleKeys);
 
-        foreach (var skillKey in currentSkillsHeldDownDuringDirectionDown)
+        foreach (var skillKey in _suspendedSkillsDuringDirectionalInput.ToList())
         {
             var mappedKey = _swapMap.FirstOrDefault(kvp => kvp.Value == Helper.ToWinFormsKey( skillKey)).Key;
             if (mappedKey == VirtualKeyCode.F23)
             {
                 if (!Helper.IsKeyDown(Helper.ToVkKey(LeftKey)))
                 {
-                    currentSkillsHeldDownDuringDirectionDown.Remove(skillKey);
+                    _suspendedSkillsDuringDirectionalInput.Remove(skillKey);
                 }
                 else
                 {
-                    InjectWomboKeyUp(LeftKey);
+                    InjectDirectionalRestoreKeyUp(LeftKey);
                 }
                 
             }
@@ -403,65 +408,63 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
             {
                 if (!Helper.IsKeyDown(Helper.ToVkKey(RightKey)))
                 {
-                    currentSkillsHeldDownDuringDirectionDown.Remove(skillKey);
+                    _suspendedSkillsDuringDirectionalInput.Remove(skillKey);
                 }
                 else
                 {
-                    InjectWomboKeyUp(RightKey);
+                    InjectDirectionalRestoreKeyUp(RightKey);
                 }
             }
             else if (mappedKey == VirtualKeyCode.F22)
             {
                 if (!Helper.IsKeyDown(Helper.ToVkKey(MiddleKey)))
                 {
-                    currentSkillsHeldDownDuringDirectionDown.Remove(skillKey);
+                    _suspendedSkillsDuringDirectionalInput.Remove(skillKey);
                 }
                 else
                 {
-                    InjectWomboKeyUp(MiddleKey);
+                    InjectDirectionalRestoreKeyUp(MiddleKey);
                 }
             }
             else
             {
                 if (!Helper.IsKeyDown(Helper.ToVkKey(mappedKey)))
                 {
-                    currentSkillsHeldDownDuringDirectionDown.Remove(skillKey);
+                    _suspendedSkillsDuringDirectionalInput.Remove(skillKey);
                 }
                 else
                 {
-                    InjectWomboKeyUp(mappedKey);
+                    InjectDirectionalRestoreKeyUp(mappedKey);
                 }
             }
 
         }
     }
-
     var op = Application.Current.Dispatcher.InvokeAsync(
         () => _controllerManager.HandleKeyDownAsync(
             KeyInterop.KeyFromVirtualKey((int)placeholderVk), isClick && AltMode)
     );
     var inner = await op; 
-    await inner;         
-    
-    await Task.Delay(24);
+    await inner;          
 
+    await Task.Delay(24);
 
     InjectLiteralKeyDown(physicalVk);
 
 
 
-
     await tcs.Task;
     
-
     await Task.Delay(8);
-
 
     await HandleMappedKeyUp(physicalVk, placeholderVk.Value, isClick);
 }
 
 
         
+        /// <summary>
+        /// Runs the mapped key-up pipeline and restores directional state after placeholder release.
+        /// </summary>
         private async Task HandleMappedKeyUp(VirtualKeyCode physicalVk, VirtualKeyCode placeholderVk, bool isClick)
         {
             if (SkipLogic)
@@ -477,46 +480,45 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
             }
 
             var isDirectionalUp = _controllerManager.DirectionalKeys.Contains(Helper.ToVkKey( placeholderVk));
-
             var op = Application.Current.Dispatcher.InvokeAsync(
                 () => _controllerManager.HandleKeyUpAsync(
                     KeyInterop.KeyFromVirtualKey((int)placeholderVk), isClick && AltMode)
             );
 
-            var inner = await op;      
+            var inner = await op;     
 
             await inner;
 
             if (!isDirectionalUp)
             {
-                if (currentSkillsHeldDownDuringDirectionDown.Any())
+                if (_suspendedSkillsDuringDirectionalInput.Any())
                 {
-                    if (currentSkillsHeldDownDuringDirectionDown.Contains(Helper.ToVkKey(placeholderVk)))
+                    if (_suspendedSkillsDuringDirectionalInput.Contains(Helper.ToVkKey(placeholderVk)))
                     {
-                        currentSkillsHeldDownDuringDirectionDown.Remove(Helper.ToVkKey( placeholderVk));
+                        _suspendedSkillsDuringDirectionalInput.Remove(Helper.ToVkKey(placeholderVk));
                     }
                 }
             }
             if (isDirectionalUp)
             {
-                foreach (var q in currentSkillsHeldDownDuringDirectionDown)
+                foreach (var skillKey in _suspendedSkillsDuringDirectionalInput)
                 {
-                    var mappedKey = _swapMap.FirstOrDefault(kvp => kvp.Value == Helper.ToWinFormsKey( q)).Key;
+                    var mappedKey = _swapMap.FirstOrDefault(kvp => kvp.Value == Helper.ToWinFormsKey(skillKey)).Key;
                     if (mappedKey == VirtualKeyCode.F23)
                     {
-                        InjectWomboKeyDown(LeftKey);
+                        InjectDirectionalRestoreKeyDown(LeftKey);
                     }
                     else if (mappedKey == VirtualKeyCode.F24)
                     {
-                        InjectWomboKeyDown(RightKey);
+                        InjectDirectionalRestoreKeyDown(RightKey);
                     }
                     else if (mappedKey == VirtualKeyCode.F22)
                     {
-                        InjectWomboKeyDown(MiddleKey);
+                        InjectDirectionalRestoreKeyDown(MiddleKey);
                     }
                     else
                     {
-                        InjectWomboKeyDown(mappedKey);
+                        InjectDirectionalRestoreKeyDown(mappedKey);
                     }
                     
                 }
@@ -525,25 +527,30 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
             InjectLiteralKeyUp(physicalVk);
             
         }
+        /// <summary>
+        /// Forwards a raw WASD key-down into the controller state machine.
+        /// </summary>
         private async Task HandleWASDKeyDown(VirtualKeyCode physicalVk)
         {
             if (SkipLogic)
             {
                 return;
             }
-
             var op = Application.Current.Dispatcher.InvokeAsync(
                 () => _controllerManager.HandleKeyDownAsync(
                     KeyInterop.KeyFromVirtualKey((int)physicalVk), AltMode)
             );
 
-            var inner = await op;  
+            var inner = await op;     
 
             await inner;
         }
 
       
         
+        /// <summary>
+        /// Forwards a raw WASD key-up into the controller state machine.
+        /// </summary>
         private async Task HandleWASDKeyUp(VirtualKeyCode physicalVk)
         {
             if (SkipLogic)
@@ -556,11 +563,14 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
                     KeyInterop.KeyFromVirtualKey((int)physicalVk), AltMode)
             );
 
-            var inner = await op;      
+            var inner = await op;     
 
             await inner;
         }
 
+        /// <summary>
+        /// Handles Win32 hotkey messages registered against the settings window.
+        /// </summary>
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_HOTKEY = 0x0312;
@@ -581,7 +591,10 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
         }
 
       
-    private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        /// <summary>
+        /// Processes low-level keyboard traffic for remapping, placeholder injection, and midpoint editing.
+        /// </summary>
+        private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
     {
         const int WM_KEYDOWN = 0x0100, WM_KEYUP = 0x0101;
         const int WM_SYSKEYDOWN = 0x0104;
@@ -600,29 +613,28 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
             if (!_toggledOff && !didRun)
             {
 
-                bool injectedByPT      = info.flags.HasFlag(Win32.KBDLLHOOKSTRUCTFlags.LLKHF_INJECTED);
-                bool injectedByWombo      = info.dwExtraInfo == new UIntPtr(Win32.MY_WOMBO);
+                bool injectedByPT = info.flags.HasFlag(Win32.KBDLLHOOKSTRUCTFlags.LLKHF_INJECTED);
+                bool injectedByDirectionalRestore = info.dwExtraInfo == new UIntPtr(Win32.DirectionalRestoreInjectionTag);
+                bool injectedByPlaceholder = info.dwExtraInfo == new UIntPtr(Win32.PlaceholderInjectionTag);
+                bool injectedByLiteral = info.dwExtraInfo == new UIntPtr(Win32.LiteralInjectionTag);
 
-                bool injectedByUs      = info.dwExtraInfo == new UIntPtr(Win32.MY_TAG);
-                bool injectedByLiteral = info.dwExtraInfo == new UIntPtr(Win32.LITERAL_TAG);
-
-                if (!injectedByPT && !injectedByUs && !injectedByLiteral && !injectedByWombo
+                if (!injectedByPT && !injectedByPlaceholder && !injectedByLiteral && !injectedByDirectionalRestore
                     && _swapMap.ContainsKey(vk))
                 {
                     var mapped = _swapMap[vk];
                     if (isDown && _physicalPressed.Add(vk))
                     {
-                        InjectTaggedKeyDown(mapped);
+                        InjectPlaceholderKeyDown(mapped);
                     }
                     else if (isUp)
                     {
-                        InjectTaggedKeyUp(mapped);
+                        InjectPlaceholderKeyUp(mapped);
                         _physicalPressed.Remove(vk);
                     }
                     return (IntPtr)1; 
                 }
 
-                if (injectedByUs && _swapMap.Values.Contains(vk))
+                if (injectedByPlaceholder && _swapMap.Values.Contains(vk))
                 {
                     if (isDown && _skillDownCallbacks.TryGetValue(vk, out var downAct))
                         downAct();
@@ -642,7 +654,7 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
                     return Win32.CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
                 }
                 
-                if (!injectedByUs && !injectedByLiteral && !_swapMap.ContainsKey(vk))
+                if (!injectedByPlaceholder && !injectedByLiteral && !_swapMap.ContainsKey(vk))
                 {
                     if (isDown && _skillDownCallbacks.TryGetValue(vk, out var normDown))
                         normDown();
@@ -662,17 +674,17 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
                         var newMidY = _viewModel.MidPoint.Y;
                         
                         _viewModel.MidPoint = new Win32.POINT { X = newMidX, Y = newMidY };
-                        Win32.SetCursorPos(newMidX, newMidY);
-                        return (IntPtr)1;  
+                        Helper.SetCursorPosDip(newMidX, newMidY);
+                        return (IntPtr)1; 
                         
                     }
                     else if (_viewModel.OverlayEnabled)
                     {
                         _viewModel.XCursorCenter -= 2;
-                        Win32.SetCursorPos(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
-                        return (IntPtr)1;  
+                        Helper.SetCursorPosDip(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
+                        return (IntPtr)1; 
                     }
-                    return (IntPtr)1;  
+                    return (IntPtr)1; 
                 }
                 else if (vk == VirtualKeyCode.RIGHT && (_viewModel.OverlayEnabled || _viewModel.EnableSetMidpoint))
                 {
@@ -682,17 +694,17 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
                         var newMidY = _viewModel.MidPoint.Y;
                         
                         _viewModel.MidPoint = new Win32.POINT { X = newMidX, Y = newMidY };
-                        Win32.SetCursorPos(newMidX, newMidY);
+                        Helper.SetCursorPosDip(newMidX, newMidY);
 
                         return (IntPtr)1; 
                     }
                     else if (_viewModel.OverlayEnabled)
                     {
                         _viewModel.XCursorCenter += 2;
-                        Win32.SetCursorPos(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
-                        return (IntPtr)1;  
+                        Helper.SetCursorPosDip(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
+                        return (IntPtr)1; 
                     }
-                    return (IntPtr)1;  
+                    return (IntPtr)1; 
                 }
                 else if (vk == VirtualKeyCode.UP && (_viewModel.OverlayEnabled || _viewModel.EnableSetMidpoint))
                 {
@@ -702,17 +714,17 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
                         var newMidY = _viewModel.MidPoint.Y - 2;
                         
                         _viewModel.MidPoint = new Win32.POINT { X = newMidX, Y = newMidY };
-                        Win32.SetCursorPos(newMidX, newMidY);
+                        Helper.SetCursorPosDip(newMidX, newMidY);
 
-                        return (IntPtr)1;  
+                        return (IntPtr)1; 
                     }
                     else if (_viewModel.OverlayEnabled)
                     {
                         _viewModel.YCursorCenter -= 2;
-                        Win32.SetCursorPos(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
-                        return (IntPtr)1;  
+                        Helper.SetCursorPosDip(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
+                        return (IntPtr)1; 
                     }
-                    return (IntPtr)1;  
+                    return (IntPtr)1; 
                 }
                 else if (vk == VirtualKeyCode.DOWN && (_viewModel.OverlayEnabled || _viewModel.EnableSetMidpoint))
                 {
@@ -722,8 +734,8 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
                         var newMidY = _viewModel.MidPoint.Y + 2;
                         
                         _viewModel.MidPoint = new Win32.POINT { X = newMidX, Y = newMidY };
-                        Win32.SetCursorPos(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
-                        Win32.SetCursorPos(newMidX, newMidY);
+                        Helper.SetCursorPosDip(_viewModel.MidPoint.X, _viewModel.MidPoint.Y);
+                        Helper.SetCursorPosDip(newMidX, newMidY);
 
 
                         return (IntPtr)1; 
@@ -733,7 +745,7 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
                         _viewModel.YCursorCenter += 2;
                         return (IntPtr)1; 
                     }
-                    return (IntPtr)1;
+                    return (IntPtr)1; 
                 }
             }
             
@@ -742,13 +754,15 @@ private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode
         return Win32.CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
     }
 
-private bool ExecuteAnySettingsHotkey(VirtualKeyCode vk, bool isDown)
+        /// <summary>
+        /// Executes settings-level hotkeys before normal remapping logic runs.
+        /// </summary>
+        private bool ExecuteAnySettingsHotkey(VirtualKeyCode vk, bool isDown)
 {
     if (!isDown) return false;
     if (vk == _viewModel.ToggleVisualCursorKey.VirtualKey)
     {
         _viewModel.ToggleVisualCursorCommand.Execute(null);
-
 
         return true;
 
@@ -799,7 +813,10 @@ private bool ExecuteAnySettingsHotkey(VirtualKeyCode vk, bool isDown)
     return false;
 }
 
-public void Dispose()
+        /// <summary>
+        /// Unregisters hotkeys and removes the low-level keyboard hook.
+        /// </summary>
+        public void Dispose()
         {
             foreach (var id in _callbacks.Keys)
                 Win32.UnregisterHotKey(_hwndSource.Handle, id);

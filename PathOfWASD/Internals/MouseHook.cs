@@ -1,4 +1,4 @@
-﻿namespace PathOfWASD.Internals;
+namespace PathOfWASD.Internals;
 
 public class MouseHook
 {

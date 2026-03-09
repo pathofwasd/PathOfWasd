@@ -1,4 +1,4 @@
-﻿using PathOfWASD.Internals;
+using PathOfWASD.Internals;
 using PathOfWASD.Managers.Interfaces;
 
 namespace PathOfWASD.Managers;

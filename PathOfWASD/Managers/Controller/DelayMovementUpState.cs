@@ -1,4 +1,4 @@
-﻿namespace PathOfWASD.Managers.Controller;
+namespace PathOfWASD.Managers.Controller;
 
 public class DelayMovementUpState
 {
@@ -6,7 +6,7 @@ public class DelayMovementUpState
     public bool CanGoUp { get; private set; }
     public DateTime MovementStartTime { get; private set; }
     
-    private readonly TimeSpan _moveThreshold = TimeSpan.FromMilliseconds(600); 
+    private readonly TimeSpan _moveThreshold = TimeSpan.FromMilliseconds(600);
 
     public void StartMovement()
     {

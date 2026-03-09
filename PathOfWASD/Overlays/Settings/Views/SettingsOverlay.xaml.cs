@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -103,7 +103,7 @@ namespace PathOfWASD.Overlays.Settings.Views
             if (window == null) return;
 
             var hwnd = new WindowInteropHelper(window).Handle;
-            var screen = Screen.FromHandle(hwnd); 
+            var screen = Screen.FromHandle(hwnd);
             var workingArea = screen.WorkingArea;
 
             if (_isCustomMaximized)

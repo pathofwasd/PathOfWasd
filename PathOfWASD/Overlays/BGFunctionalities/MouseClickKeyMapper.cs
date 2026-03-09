@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using PathOfWASD.Internals;
@@ -6,7 +6,6 @@ using WindowsInput.Native;
 
 namespace PathOfWASD.Overlays.BGFunctionalities
 {
-
     public class MouseClickKeyMapper : IDisposable
     {
         private readonly Dictionary<MouseButtons, VirtualKeyCode> _mouseKeyMapping;
@@ -99,7 +98,7 @@ namespace PathOfWASD.Overlays.BGFunctionalities
                     {
                         _pressedButtons.Add(button);
                         InjectTaggedKeyDown(vk);
-                        return new IntPtr(1); 
+                        return new IntPtr(1);
                     }
                 }
                 else
@@ -108,7 +107,7 @@ namespace PathOfWASD.Overlays.BGFunctionalities
                     {
                         _pressedButtons.Remove(button);
                         InjectTaggedKeyUp(vk);
-                        return new IntPtr(1); 
+                        return new IntPtr(1);
                     }
                 }
             }
@@ -116,13 +115,12 @@ namespace PathOfWASD.Overlays.BGFunctionalities
             return Win32.CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
-        private void InjectTaggedKeyDown(VirtualKeyCode vk) => InjectKey(vk, 0, Win32.MY_TAG);
-        private void InjectTaggedKeyUp(VirtualKeyCode vk) => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.MY_TAG);
-        private void InjectLiteralKeyDown(VirtualKeyCode vk) => InjectKey(vk, 0, Win32.LITERAL_TAG);
+        private void InjectTaggedKeyDown(VirtualKeyCode vk) => InjectKey(vk, 0, Win32.PlaceholderInjectionTag);
+        private void InjectTaggedKeyUp(VirtualKeyCode vk) => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.PlaceholderInjectionTag);
+        private void InjectLiteralKeyDown(VirtualKeyCode vk) => InjectKey(vk, 0, Win32.LiteralInjectionTag);
 
-        private void InjectLiteralKeyUp(VirtualKeyCode vk) => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.LITERAL_TAG);
+        private void InjectLiteralKeyUp(VirtualKeyCode vk) => InjectKey(vk, Win32.KEYEVENTF_KEYUP, Win32.LiteralInjectionTag);
 
-        
         private void InjectKey(VirtualKeyCode vk, uint flags, ulong tag)
         {
             var input = new Win32.INPUT

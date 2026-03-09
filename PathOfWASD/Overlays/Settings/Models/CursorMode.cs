@@ -1,4 +1,4 @@
-﻿namespace PathOfWASD.Overlays.Settings.Models;
+namespace PathOfWASD.Overlays.Settings.Models;
 
 public enum CursorMode
 {

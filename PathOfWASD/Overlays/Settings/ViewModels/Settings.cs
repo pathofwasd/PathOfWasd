@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Windows.Forms;
@@ -10,6 +11,9 @@ using WindowsInput.Native;
 
 namespace PathOfWASD.Overlays.Settings.ViewModels
 {
+   /// <summary>
+   /// Stores persisted application settings and implements the JSON-backed settings service.
+   /// </summary>
    public class Settings : ISettingService
     {
         private static readonly string AppDirectory =
@@ -51,7 +55,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         public int AppHeightSize { get; set; }
         public int AfterMouseJumpDelayOffset { get; set; }
         public int BeforeMoveDelayOffset { get; set; }
-        public double Sensitivity { get; set; } = 1000; 
+        public double Sensitivity { get; set; } = 1000;
         public bool EnableLeftClickInteractions { get; set; }
         public bool InvertAltMode { get; set; }
         public bool EnableLeftClickMovement { get; set; }
@@ -90,6 +94,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             YCursorCenter = 0;
             AppWidthSize            = 590;
             AppHeightSize = 1082;
+            AfterMouseJumpDelayOffset = 30;
             BeforeMoveDelayOffset     = 100;
             Sensitivity               = 1000;
                 
@@ -99,29 +104,33 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             KeysToMapToToggleDirectionalEntries  = new[] { VirtualKeyCode.VK_F };
         }
 
+        /// <summary>
+        /// Loads the persisted settings file or recreates defaults if the file is missing or invalid.
+        /// </summary>
         public Settings Load()
         {
             try { Directory.CreateDirectory(AppDirectory); }
-            catch (Exception ex) { Console.WriteLine($"Failed to create settings directory: {ex.Message}"); }
+            catch (Exception ex) { Trace.TraceError($"Failed to create settings directory: {ex.Message}"); }
 
             if (File.Exists(SettingsFileName))
             {
                 try
                 {
                     var json = File.ReadAllText(SettingsFileName);
-                    var sevenFucks = JsonSerializer.Deserialize<Settings>(json, JsonOptions)
+                    var loadedSettings = JsonSerializer.Deserialize<Settings>(json, JsonOptions)
                         ?? CreateAndSaveDefaults();
-                    return sevenFucks;
+                    return loadedSettings;
                 }
                 catch (Exception ex)
                 {
+                    Trace.TraceError($"Failed to load settings, using defaults: {ex.Message}");
                     try
                     {
                         File.Delete(SettingsFileName);
                     }
                     catch (Exception deleteEx)
                     {
-                        Console.WriteLine($"Failed to delete corrupted settings file: {deleteEx.Message}");
+                        Trace.TraceError($"Failed to delete corrupted settings file: {deleteEx.Message}");
                     }
                     return CreateAndSaveDefaults();
                 }
@@ -131,6 +140,9 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
                 return CreateAndSaveDefaults();
             }
         }
+        /// <summary>
+        /// Creates a copy used for dirty-state comparison and reset behavior.
+        /// </summary>
         public Settings Clone()
         {
             return new Settings
@@ -204,10 +216,10 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         public override int GetHashCode() => base.GetHashCode();
         private static Settings CreateAndSaveDefaults()
         {
-            var s = new Settings();
-            s.InitializeDefaults();
-            s.Save();
-            return s;
+            var defaultSettings = new Settings();
+            defaultSettings.InitializeDefaults();
+            defaultSettings.Save();
+            return defaultSettings;
         }
         
         public static Settings Defaults { get; } = new Settings
@@ -217,8 +229,8 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             StandKey = VirtualKeyCode.DELETE,
             ToggleOverlayKey = VirtualKeyCode.F1,
             ToggleVisualCursorKey = VirtualKeyCode.F2,
-            HoldToggleVisualCursorKey = VirtualKeyCode.SCROLL,
-            HoldToggleAltKey = VirtualKeyCode.LMENU,
+            HoldToggleVisualCursorKey = VirtualKeyCode.LMENU,
+            HoldToggleAltKey = VirtualKeyCode.SCROLL,
             SetMidpointKey = VirtualKeyCode.F3,
             TeleportMidpointKey = VirtualKeyCode.F7,
             ApplyKey = VirtualKeyCode.F12,
@@ -248,6 +260,9 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             KeysToMapToToggleDirectionalEntries  = new[] { VirtualKeyCode.VK_F }
         };
         
+        /// <summary>
+        /// Saves the current settings instance to disk.
+        /// </summary>
         public void Save()
         {
             try
@@ -257,26 +272,31 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to save settings: {ex.Message}");
+                Trace.TraceError($"Failed to save settings: {ex.Message}");
             }
         }
 
+        /// <summary>
+        /// Saves the supplied settings instance to disk.
+        /// </summary>
         public void Save(Settings settings)
         {
             try
             {
-                var modSettings = settings;
                 Directory.CreateDirectory(AppDirectory);
-                var json = JsonSerializer.Serialize(modSettings, JsonOptions);
+                var json = JsonSerializer.Serialize(settings, JsonOptions);
                 File.WriteAllText(SettingsFileName, json);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to save settings statically: {ex.Message}");
+                Trace.TraceError($"Failed to save settings statically: {ex.Message}");
             }
         }
     }
 
+    /// <summary>
+    /// Serializable midpoint type used in settings persistence.
+    /// </summary>
     public class POINT
     {
         public int X { get; set; }

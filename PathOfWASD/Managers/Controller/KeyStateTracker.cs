@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 using PathOfWASD.Managers.Controller.Interfaces;
 
 namespace PathOfWASD.Managers.Controller;
@@ -15,5 +15,5 @@ public class KeyStateTracker : IKeyStateTracker
 
     public bool IsHeld(Key key) => _held.Contains(key);
     
-    public void Clear() => _held.Clear(); 
+    public void Clear() => _held.Clear();
 }

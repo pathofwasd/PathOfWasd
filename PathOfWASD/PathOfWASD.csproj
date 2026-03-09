@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <RootNamespace>PathOfWASD</RootNamespace>
         <ApplicationIcon>Asset\moveexile.ico</ApplicationIcon>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net9.0-windows</TargetFramework>
+        <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
@@ -31,6 +32,15 @@
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>
       </ApplicationDefinition>
+    </ItemGroup>
+
+    <ItemGroup>
+      
+      <Compile Remove="artifacts\**\*.cs" />
+      <EmbeddedResource Remove="artifacts\**" />
+      <None Remove="artifacts\**" />
+      <Page Remove="artifacts\**\*.xaml" />
+      <Resource Remove="artifacts\**" />
     </ItemGroup>
 
 </Project>

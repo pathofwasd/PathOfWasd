@@ -1,0 +1,6 @@
+{
+  "dotnet.defaultSolution": "PathOfWASD.sln",
+  "files.exclude": {
+    "**/.dotnet-cli": true
+  }
+}

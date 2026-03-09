@@ -1,4 +1,4 @@
-﻿using System.Windows.Input;
+using System.Windows.Input;
 
 namespace PathOfWASD.Managers.Controller.Interfaces;
 
@@ -9,5 +9,5 @@ public interface IKeyStateTracker
     bool AnyHeld(IEnumerable<Key> keys);
     List<Key> HeldWhere(IEnumerable<Key> keys);
     bool IsHeld(Key key);
-    void Clear(); 
+    void Clear();
 }
