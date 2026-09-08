@@ -64,6 +64,11 @@ namespace PathOfWASD.Startup
                 {
                     if (p.Id != me.Id)
                     {
+                        if (Mutex.TryOpenExisting(CursorVisibilityWatchdog.MarkerName(p.Id), out var recoveryMarker))
+                        {
+                            recoveryMarker.Dispose();
+                            continue; // Let recovery restore the cursor when the old app exits.
+                        }
                         try { p.Kill(); p.WaitForExit(); }
                         catch {  }
                     }
@@ -125,6 +130,7 @@ namespace PathOfWASD.Startup
             sc.AddSingleton<IKeyStateTracker, KeyStateTracker>();
             sc.AddSingleton<DelayMovementUpState>();
             sc.AddSingleton<ICursorState, CursorState>();
+            sc.AddSingleton<CursorVisibilityService>();
             sc.AddSingleton<CursorManager>();
 
             sc.AddSingleton<IControllerState, ControllerState>();

@@ -799,6 +799,15 @@
             </Border>
           </Expander>
                     
+          <StackPanel Margin="8,0,8,16">
+            <CheckBox Style="{StaticResource ModernCheckBox}"
+                      Content="Hide movement cursor (experimental)"
+                      IsChecked="{Binding HideMovementCursor, Mode=TwoWay}"
+                      ToolTip="Hide the real cursor in WASD mode while Path of Exile is focused. Restore it for aimed skills, normal mouse use and other windows. Defaults off; save/apply to activate. Tested in Path of Exile; testing is still limited."/>
+            <TextBlock Text="{Binding CursorHidingStatus}" Foreground="#BBBBBB"
+                       TextWrapping="Wrap" Margin="0,4,0,0"/>
+          </StackPanel>
+
           <Expander           Style="{StaticResource MaterialGroupExpander}" Header="Actions" IsExpanded="True" Foreground="White" Margin="0,0,0,16">
             <Expander.HeaderTemplate>
               <DataTemplate>

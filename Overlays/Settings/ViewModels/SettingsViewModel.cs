@@ -31,6 +31,10 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         private bool _hasUnappliedChanges;
         [ObservableProperty]
         private CursorMode _cursorMode;
+        [ObservableProperty]
+        private bool _hideMovementCursor;
+        [ObservableProperty]
+        private string _cursorHidingStatus = "";
         
         public int AppHeightSize { get; set; }
 
@@ -226,6 +230,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         private void ApplySettings(Settings s, POINT? oldpoint = null)
         {
             CursorMode = s.CursorMode;
+            HideMovementCursor = s.HideMovementCursor;
             MovementKey.VirtualKey               = s.MovementKey;
             StandKey.VirtualKey                  = s.StandKey;
             ToggleOverlayKey.VirtualKey          = s.ToggleOverlayKey;
@@ -316,6 +321,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             var newSettings = new Settings
             {
                 CursorMode = CursorMode,
+                HideMovementCursor = HideMovementCursor,
                 MovementKey = MovementKey.VirtualKey,
                 StandKey = StandKey.VirtualKey,
                 ToggleOverlayKey = ToggleOverlayKey.VirtualKey,
@@ -368,6 +374,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             var newSettings = new Settings
             {
                 CursorMode = CursorMode,
+                HideMovementCursor = HideMovementCursor,
                 MovementKey =  MovementKey.VirtualKey,
                 StandKey =  StandKey.VirtualKey,
                 ToggleOverlayKey =  ToggleOverlayKey.VirtualKey,
@@ -545,6 +552,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             return new Settings
             {
                 CursorMode = CursorMode,
+                HideMovementCursor = HideMovementCursor,
                 MovementKey =  MovementKey.VirtualKey,
                 StandKey =  StandKey.VirtualKey,
                 ToggleOverlayKey =  ToggleOverlayKey.VirtualKey,

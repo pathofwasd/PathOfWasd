@@ -20,6 +20,7 @@ public class CursorManager
     private RawMouseInputHandler _inputHandler;
 
     private readonly ICursorOverlay _overlayWindow;
+    private readonly CursorVisibilityService _visibility;
     
     private readonly InputSimulator _sim = new();
     public ICursorState State { get; }
@@ -29,10 +30,12 @@ public class CursorManager
     /// </summary>
     public CursorManager(
         ICursorOverlay overlay,
-        ICursorState state)
+        ICursorState state,
+        CursorVisibilityService visibility)
     {
         _overlayWindow = overlay;
         State = state;
+        _visibility = visibility;
         
         _overlayWindow.SourceInitialized += OnSourceInitialized;
     }
@@ -65,6 +68,7 @@ public class CursorManager
     /// </summary>
     public async Task UnlockRealCursor(bool isClick = false)
     {
+        _visibility.RequestHidden(false);
         await JumpToVirtualCursor();
         UserControlsRealCursor = true;
         
@@ -80,6 +84,7 @@ public class CursorManager
     /// </summary>
     public async Task StopUnlockRealCursor()
     {
+        _visibility.RequestHidden(false);
         await JumpToVirtualCursor();
         UserControlsRealCursor = true;
         
@@ -134,6 +139,7 @@ public class CursorManager
             }
         });
        _inputHandler.Start();
+       _visibility.RequestHidden(true);
 
     }
     

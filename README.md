@@ -1,5 +1,7 @@
-Current release https://github.com/pathofwasd/PathOfWasd/releases/tag/3.28.0
-(Cursor visibilty options are no longer available)
+Current release https://github.com/pathofwasd/PathOfWasd/releases/tag/3.28.0.1
+(Legacy cursor visibility modes are no longer available.)
+
+This source tree includes a new **Hide movement cursor (experimental)** checkbox above Actions. It defaults off. Save/apply to try Windows cursor hiding without modifying the PoE process. The real cursor returns for aimed skills and normal mouse use. A user has confirmed it works in Path of Exile; testing is still limited. See [cursor hiding notes](docs/developer/cursor-hiding.md).
 
 # Path of WASD
 

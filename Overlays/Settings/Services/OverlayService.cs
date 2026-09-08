@@ -27,6 +27,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         private readonly ICursorOverlay _cursorOverlay;
         private readonly CursorCenterOverlay _cursorCenterOverlay;
         private readonly CursorManager _cursorManager;
+        private readonly CursorVisibilityService _cursorVisibility;
         private readonly ControllerManager _controllerManager;
         private readonly HotkeyController _hotkeyController;
         private readonly MouseClickKeyMapper _mouseClickKeyMapper;
@@ -50,7 +51,8 @@ namespace PathOfWASD.Overlays.Settings.Services
             ControllerManager controllerManager,
             HotkeyController hotkeyController,
             MouseClickKeyMapper mouseClickKeyMapper,
-            ICursorImageLoader imageLoader)
+            ICursorImageLoader imageLoader,
+            CursorVisibilityService cursorVisibility)
         {
             _settingsOverlay = settingsOverlay;
             _cursorOverlay    = cursorOverlay;
@@ -61,9 +63,11 @@ namespace PathOfWASD.Overlays.Settings.Services
             _mouseClickKeyMapper = mouseClickKeyMapper;
             _cursorCenterOverlay = cursorCenterOverlay;
             _imageLoader = imageLoader;
+            _cursorVisibility = cursorVisibility;
             
             _settingsOverlay.Show();
             var vm = (SettingsViewModel)_settingsOverlay.DataContext;
+            _cursorVisibility.StatusChanged += status => vm.CursorHidingStatus = status;
             vm.OnRequestClose = _settingsOverlay.Hide;
             
             ToggleOverlayCommand = vm.ToggleOverlayCommand;
@@ -183,6 +187,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         {
             _isLocked = true;
             await _cursorManager.LockRealCursor(false, false, true);
+            _cursorVisibility.SetWasdActive(true);
             _mouseClickKeyMapper.SkipLogic = false;
             _hotkeyController.SkipLogic = false;
             _hotkeyController.Rebind();
@@ -193,6 +198,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         private async Task DeactivateVirtualCursor()
         {
+            _cursorVisibility.SetWasdActive(false);
             _isLocked = false;
             await _cursorManager.JumpToVirtualCursor();
             await _controllerManager.State.DontMovePlace();
@@ -209,6 +215,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         private void UpdateManagers(SettingsViewModel vm)
         {
+            _cursorVisibility.SetEnabled(vm.HideMovementCursor);
             var toggleKeys = Helper.GetFKeyMaps(vm);
             var directionalToggleKeys = Helper.GetDirectionalFKeyMaps(vm, toggleKeys.Item2);
             
@@ -305,6 +312,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         public void Dispose()
         {
+            _cursorVisibility.Dispose();
             _hotkeyController?.Dispose();
             _mouseClickKeyMapper?.Stop();
             _globalHook.Dispose();

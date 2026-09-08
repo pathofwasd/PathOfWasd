@@ -103,14 +103,14 @@ internal sealed class NativeCursorWindow : Form
     /// </summary>
     public void MoveTo(int left, int top)
     {
-        Left = left;
-        Top = top;
-
         if (!IsHandleCreated)
         {
+            Left = left;
+            Top = top;
             return;
         }
 
+        // Left/Top setters also move an existing HWND; issue only the final move.
         LayeredWindowInterop.SetWindowPos(
             Handle,
             LayeredWindowInterop.HWND_TOPMOST,

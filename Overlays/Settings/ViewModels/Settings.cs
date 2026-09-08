@@ -31,6 +31,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             Converters = { new JsonStringEnumConverter() }
         };
         public CursorMode CursorMode { get; set; }
+        public bool HideMovementCursor { get; set; } // New and existing settings default off.
 
         public VirtualKeyCode MovementKey { get; set; }
         public VirtualKeyCode StandKey { get; set; }
@@ -148,6 +149,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             return new Settings
             {
                 CursorMode = CursorMode,
+                HideMovementCursor = HideMovementCursor,
                 MovementKey = MovementKey,
                 StandKey = StandKey,
                 ToggleOverlayKey = ToggleOverlayKey,
@@ -185,6 +187,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             if (obj is not Settings other) return false;
 
             return CursorMode == other.CursorMode &&
+                   HideMovementCursor == other.HideMovementCursor &&
                    MovementKey == other.MovementKey &&
                    StandKey == other.StandKey &&
                    ToggleOverlayKey == other.ToggleOverlayKey &&

@@ -2,6 +2,8 @@
 
 ## Overview
 
+For the opt-in Windows cursor-hiding service and its recovery helper, see [Experimental movement-cursor hiding](cursor-hiding.md).
+
 The project renders two cursor-related visuals:
 
 - the main virtual cursor used during virtual-cursor mode

@@ -4,6 +4,7 @@
         <RootNamespace>PathOfWASD</RootNamespace>
         <ApplicationIcon>Asset\moveexile.ico</ApplicationIcon>
         <OutputType>WinExe</OutputType>
+        <StartupObject>PathOfWASD.Startup.Program</StartupObject>
         <TargetFramework>net9.0-windows</TargetFramework>
         <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
         <Nullable>enable</Nullable>
@@ -37,6 +38,7 @@
     <ItemGroup>
       
       <Compile Remove="artifacts\**\*.cs" />
+      <Compile Remove="tests\**\*.cs" />
       <EmbeddedResource Remove="artifacts\**" />
       <None Remove="artifacts\**" />
       <Page Remove="artifacts\**\*.xaml" />
