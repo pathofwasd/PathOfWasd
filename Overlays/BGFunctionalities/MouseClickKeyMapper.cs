@@ -18,6 +18,7 @@ namespace PathOfWASD.Overlays.BGFunctionalities
         private IntPtr _hookId = IntPtr.Zero;
 
         public bool SkipLogic { get; set; }
+        public Func<int, bool, bool>? SideButtonChanged { get; set; }
 
         public MouseClickKeyMapper(Dictionary<MouseButtons, VirtualKeyCode> mouseKeyMapping)
         {
@@ -46,6 +47,15 @@ namespace PathOfWASD.Overlays.BGFunctionalities
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
+            if (nCode >= 0 && (wParam.ToInt32() == Win32.WM_XBUTTONDOWN || wParam.ToInt32() == Win32.WM_XBUTTONUP))
+            {
+                var side = Marshal.PtrToStructure<Win32.MSLLHOOKSTRUCT>(lParam);
+                var number = (side.mouseData >> 16) & 0xFFFF;
+                if ((side.flags & (Win32.LLMHF_INJECTED | Win32.LLMHF_LOWER_IL_INJECTED)) == 0
+                    && number is 1 or 2
+                    && SideButtonChanged?.Invoke(number == 1 ? 4 : 5, wParam.ToInt32() == Win32.WM_XBUTTONDOWN) == true)
+                    return new IntPtr(1);
+            }
             if (nCode >= 0 && !SkipLogic)
             {
                 var hookStruct = Marshal.PtrToStructure<Win32.MSLLHOOKSTRUCT>(lParam);

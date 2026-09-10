@@ -32,6 +32,11 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         };
         public CursorMode CursorMode { get; set; }
         public bool HideMovementCursor { get; set; } // New and existing settings default off.
+        public bool UseArrowKeys { get; set; }
+        public VirtualKeyCode Mouse4Key { get; set; } = VirtualKeyCode.NUMPAD4;
+        public bool EnableMouse4AltClick { get; set; }
+        public VirtualKeyCode Mouse5Key { get; set; } = VirtualKeyCode.NUMPAD5;
+        public bool EnableMouse5AltClick { get; set; }
 
         public VirtualKeyCode MovementKey { get; set; }
         public VirtualKeyCode StandKey { get; set; }
@@ -150,6 +155,11 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             {
                 CursorMode = CursorMode,
                 HideMovementCursor = HideMovementCursor,
+                UseArrowKeys = UseArrowKeys,
+                Mouse4Key = Mouse4Key,
+                EnableMouse4AltClick = EnableMouse4AltClick,
+                Mouse5Key = Mouse5Key,
+                EnableMouse5AltClick = EnableMouse5AltClick,
                 MovementKey = MovementKey,
                 StandKey = StandKey,
                 ToggleOverlayKey = ToggleOverlayKey,
@@ -188,6 +198,11 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
 
             return CursorMode == other.CursorMode &&
                    HideMovementCursor == other.HideMovementCursor &&
+                   UseArrowKeys == other.UseArrowKeys &&
+                   Mouse4Key == other.Mouse4Key &&
+                   EnableMouse4AltClick == other.EnableMouse4AltClick &&
+                   Mouse5Key == other.Mouse5Key &&
+                   EnableMouse5AltClick == other.EnableMouse5AltClick &&
                    MovementKey == other.MovementKey &&
                    StandKey == other.StandKey &&
                    ToggleOverlayKey == other.ToggleOverlayKey &&

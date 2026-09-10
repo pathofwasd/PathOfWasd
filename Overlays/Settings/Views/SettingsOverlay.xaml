@@ -403,21 +403,22 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
 
                   </Grid.RowDefinitions>
                   
-                  <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Text="Hold Toggle Mouse Alt Key:" VerticalAlignment="Center"
+                  <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Text="Hold Toggle Mouse Alt Key:" VerticalAlignment="Center"
                              Tag="Hold this key to map mouse clicks to the keyboard keys configured in this menu instead of actual clicks."
                              Style="{StaticResource UnderlinedTextBlockStyle}" />
                   <bgFunctionalities:KeyCaptureBox
                     Style="{StaticResource ModernTextBox}"
 
-                    Grid.Column="3" Grid.Row="3"
+                    Grid.Column="3" Grid.Row="4"
                     Margin="10,0,10,4"
                     MinHeight="24"
                     SelectedKey="{Binding HoldToggleAltKey.DisplayKey, Mode=TwoWay}" />
               
-                  <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                  <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                             Foreground="White"
                             IsChecked="{Binding InvertAltMode, Mode=TwoWay}"
                             Style="{StaticResource ModernCheckBox}"
@@ -466,7 +467,24 @@
                     Margin="10,0,10,4"
                     MinHeight="24"
                     SelectedKey="{Binding MiddleKey.DisplayKey, Mode=TwoWay}" />
+                  <CheckBox Grid.Row="3" Grid.Column="0" Style="{StaticResource ModernCheckBox}"
+                            IsChecked="{Binding EnableMouse4AltClick, Mode=TwoWay}" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource UnderlinedTextBlockStyle}" Text="Mouse 4 Alt Click:"
+                               Tag="Enable alternate clicks for Mouse 4 (the back side button). Click the key box, then press the keyboard key assigned to your skill in PoE.&#10;&#10;While holding ‘Toggle Mouse Alt Key’, this button sends your chosen key instead of a normal click. Reverse Mouse Alt Key Functionality swaps these modes. No separate Skill Keys entry is needed.&#10;&#10;Disabled buttons work normally. Turn movement mode off before saving changes."/>
+                  </CheckBox>
+                  <bgFunctionalities:KeyCaptureBox x:Name="Mouse4AltKeyBox" Grid.Column="1" Grid.Row="3"
+                    Style="{StaticResource ModernTextBox}" Margin="10,0,10,4" MinHeight="24"
+                    IsEnabled="{Binding EnableMouse4AltClick}" SelectedKey="{Binding Mouse4Key.DisplayKey, Mode=TwoWay}"/>
+                  <CheckBox Grid.Row="3" Grid.Column="2" Style="{StaticResource ModernCheckBox}"
+                            IsChecked="{Binding EnableMouse5AltClick, Mode=TwoWay}" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource UnderlinedTextBlockStyle}" Text="Mouse 5 Alt Click:"
+                               Tag="Enable alternate clicks for Mouse 5 (the forward side button). Click the key box, then press the keyboard key assigned to your skill in PoE.&#10;&#10;While holding ‘Toggle Mouse Alt Key’, this button sends your chosen key instead of a normal click. Reverse Mouse Alt Key Functionality swaps these modes. No separate Skill Keys entry is needed.&#10;&#10;Disabled buttons work normally. Turn movement mode off before saving changes."/>
+                  </CheckBox>
+                  <bgFunctionalities:KeyCaptureBox x:Name="Mouse5AltKeyBox" Grid.Column="3" Grid.Row="3"
+                    Style="{StaticResource ModernTextBox}" Margin="10,0,10,4" MinHeight="24"
+                    IsEnabled="{Binding EnableMouse5AltClick}" SelectedKey="{Binding Mouse5Key.DisplayKey, Mode=TwoWay}"/>
                 </Grid>
+
               </StackPanel>
               
             </Border>
@@ -799,6 +817,17 @@
             </Border>
           </Expander>
                     
+          <Expander x:Name="MovementKeysSection" Style="{StaticResource MaterialGroupExpander}" Header="Movement keys"
+                    IsExpanded="True" Foreground="White" Margin="0,0,0,16">
+            <StackPanel Margin="8">
+              <CheckBox Style="{StaticResource ModernCheckBox}" Content="Use arrow keys instead of WASD"
+                        IsChecked="{Binding UseArrowKeys, Mode=TwoWay}"/>
+              <TextBlock Text="Turn movement mode off, then save/apply. Conflicting bindings must be reassigned before switching layouts. Arrow keys still adjust the midpoint when movement mode is off."
+                         TextWrapping="Wrap" Foreground="#BBBBBB" Margin="0,4,0,12"/>
+              <TextBlock Text="{Binding InputBindingError}" TextWrapping="Wrap" Foreground="#FFB080" Margin="0,6,0,0"/>
+            </StackPanel>
+          </Expander>
+
           <StackPanel Margin="8,0,8,16">
             <CheckBox Style="{StaticResource ModernCheckBox}"
                       Content="Hide movement cursor (experimental)"
@@ -894,7 +923,7 @@
       </ScrollViewer>
       
       <TextBlock Grid.Row="2"
-                 Text="v3.28.0 (Experimental)"                
+                 Text="v3.28.0.2 (Experimental)"
                  Margin="0,0,12,8"            
                  HorizontalAlignment="Right"
                  Foreground="White"
