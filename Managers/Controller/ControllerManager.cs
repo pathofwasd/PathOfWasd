@@ -29,6 +29,7 @@ namespace PathOfWASD.Managers.Controller
         public List<Key> DirectionalKeys { get; set; }
         public Key CurrentKey { get; private set; }
         public bool IsClick { get; set; }
+        public bool UseArrowKeys { get; set; }
 
         public Dictionary<Key, CancellationTokenSource> PendingSkillUpCts { get; } = new();
         public Dictionary<Key, DateTime> SkillDownTimes { get; } = new();

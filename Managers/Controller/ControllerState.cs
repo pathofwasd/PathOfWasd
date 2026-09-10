@@ -49,7 +49,7 @@ public class ControllerState : IControllerState
     /// </summary>
     public async Task MovePlace()
     {
-        if (Helper.IsWasdKeyDown())
+        if (MovementBindings.AnyHeld(_manager.Value.UseArrowKeys, Helper.IsKeyDown))
         {
             _sim.Keyboard.KeyDown(MovementKey);
         }

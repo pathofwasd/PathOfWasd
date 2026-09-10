@@ -67,12 +67,18 @@ namespace PathOfWASD.Overlays.Settings.Services
             
             _settingsOverlay.Show();
             var vm = (SettingsViewModel)_settingsOverlay.DataContext;
+            _mouseClickKeyMapper.SideButtonChanged = _hotkeyController.HandleSideButton;
+            vm.ValidateInputChange = () => _isLocked &&
+                (vm.UseArrowKeys != _controllerManager.UseArrowKeys || (vm.EnableMouse4AltClick ? vm.Mouse4Key.VirtualKey : (WindowsInput.Native.VirtualKeyCode?)null) != _hotkeyController.Mouse4Key
+                 || (vm.EnableMouse5AltClick ? vm.Mouse5Key.VirtualKey : (WindowsInput.Native.VirtualKeyCode?)null) != _hotkeyController.Mouse5Key)
+                ? "Turn movement mode off before changing movement keys or mouse-alt bindings." : null;
             _cursorVisibility.StatusChanged += status => vm.CursorHidingStatus = status;
             vm.OnRequestClose = _settingsOverlay.Hide;
             
             ToggleOverlayCommand = vm.ToggleOverlayCommand;
             ExitCommand = new RelayCommand(() => Exit(vm));
 
+            vm.InputBindingsRejected += ShowInputBindingError;
             vm.SaveRequested += () => OnSettingsChanged(vm);
             vm.ApplyRequested += () => OnSettingsChanged(vm);
             vm.ToggleVisualCursorRequested += async () => await ToggleVirtualCursor();
@@ -167,8 +173,9 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         private void OnSettingsChanged(SettingsViewModel vm)
         {
-            UpdateManagers(vm);
-            _hotkeyController.Rebind();
+            if (!UpdateManagers(vm)) return;
+            if (_isLocked) _hotkeyController.Rebind();
+            else _hotkeyController.RebindOnToOffWASDMode();
         }
 
         /// <summary>
@@ -180,17 +187,32 @@ namespace PathOfWASD.Overlays.Settings.Services
             UpdateManagers((SettingsViewModel)_settingsOverlay.DataContext);
         }
 
+        private void ShowInputBindingError()
+        {
+            _settingsOverlay.Show();
+            _settingsOverlay.MovementKeysSection.IsExpanded = true;
+            _settingsOverlay.MovementKeysSection.BringIntoView();
+        }
+
         /// <summary>
         /// Switches into virtual-cursor mode and reenables input remapping.
         /// </summary>
         private async Task ActivateVirtualCursor()
         {
+            // Rebinding reads the editable view model. Validate and synchronize the
+            // whole configuration before locking the cursor, including unsaved edits.
+            if (!UpdateManagers((SettingsViewModel)_settingsOverlay.DataContext))
+            {
+                ShowInputBindingError();
+                return;
+            }
             _isLocked = true;
             await _cursorManager.LockRealCursor(false, false, true);
             _cursorVisibility.SetWasdActive(true);
             _mouseClickKeyMapper.SkipLogic = false;
             _hotkeyController.SkipLogic = false;
             _hotkeyController.Rebind();
+            _hotkeyController.SideButtonsEnabled = true;
         }
 
         /// <summary>
@@ -198,6 +220,8 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         private async Task DeactivateVirtualCursor()
         {
+            _hotkeyController.SideButtonsEnabled = false;
+            _hotkeyController.ReleaseActiveInputs();
             _cursorVisibility.SetWasdActive(false);
             _isLocked = false;
             await _cursorManager.JumpToVirtualCursor();
@@ -213,11 +237,20 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// <summary>
         /// Pushes the current settings values into the cursor and controller runtime state.
         /// </summary>
-        private void UpdateManagers(SettingsViewModel vm)
+        private bool UpdateManagers(SettingsViewModel vm)
         {
+            if (!vm.ValidateInputBindings()) return false;
+            if (!_isLocked)
+            {
+                _controllerManager.UseArrowKeys = vm.UseArrowKeys;
+                _hotkeyController.Mouse4Key = vm.EnableMouse4AltClick ? vm.Mouse4Key.VirtualKey : null;
+                _hotkeyController.Mouse5Key = vm.EnableMouse5AltClick ? vm.Mouse5Key.VirtualKey : null;
+            }
             _cursorVisibility.SetEnabled(vm.HideMovementCursor);
             var toggleKeys = Helper.GetFKeyMaps(vm);
             var directionalToggleKeys = Helper.GetDirectionalFKeyMaps(vm, toggleKeys.Item2);
+            if (_hotkeyController.Mouse4Key.HasValue) toggleKeys.Item1.Add(SideMouseBindings.Placeholder(4));
+            if (_hotkeyController.Mouse5Key.HasValue) toggleKeys.Item1.Add(SideMouseBindings.Placeholder(5));
             
             _cursorManager.State.CursorMode = vm.CursorMode;
             _cursorManager.State.Offset      = vm.MovementOffset;
@@ -235,6 +268,7 @@ namespace PathOfWASD.Overlays.Settings.Services
             _hotkeyController.LeftKey = vm.LeftKey.VirtualKey;
             _hotkeyController.RightKey = vm.RightKey.VirtualKey;
             _hotkeyController.MiddleKey = vm.MiddleKey.VirtualKey;
+            return true;
 
         }
         

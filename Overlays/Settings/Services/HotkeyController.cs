@@ -21,6 +21,17 @@ namespace PathOfWASD.Overlays.Settings.Services
     public class HotkeyController : IDisposable
     {
         private readonly HashSet<VirtualKeyCode> _physicalPressed = new();
+        private sealed record SideButtonPress(int Button, VirtualKeyCode Output, VirtualKeyCode Placeholder, bool AsMouse, int Generation, int SourceId);
+        private readonly Dictionary<int, SideButtonPress> _heldSideButtons = new();
+        private readonly SkillInputSources _outputSources = new();
+        private int _bindingGeneration;
+        private int _nextSideSource;
+        private readonly Action<VirtualKeyCode, uint, ulong> _sendKey;
+        private readonly Action<int, bool> _sendSideMouse;
+        private readonly Func<Key, bool> _isKeyDown;
+        public VirtualKeyCode? Mouse4Key { get; set; }
+        public VirtualKeyCode? Mouse5Key { get; set; }
+        public bool SideButtonsEnabled { get; set; }
         private readonly ControllerManager _controllerManager;
         
         private HwndSource _hwndSource;
@@ -70,6 +81,28 @@ namespace PathOfWASD.Overlays.Settings.Services
 
         private void InjectKey(VirtualKeyCode vk, uint flags, ulong tag)
         {
+            if (vk == SideMouseBindings.RawKey(4)) _sendSideMouse(4, flags == 0);
+            else if (vk == SideMouseBindings.RawKey(5)) _sendSideMouse(5, flags == 0);
+            else _sendKey(vk, flags, tag);
+        }
+
+        private static void SendSideMouse(int button, bool down)
+        {
+            var input = new Win32.INPUT
+            {
+                type = (int)Win32.INPUT_MOUSE,
+                U = new Win32.InputUnion { mi = new Win32.MOUSEINPUT
+                {
+                    mouseData = (uint)(button - 3),
+                    dwFlags = down ? 0x0080u : 0x0100u, // MOUSEEVENTF_XDOWN / XUP
+                    dwExtraInfo = new UIntPtr(Win32.LiteralInjectionTag)
+                } }
+            };
+            Win32.SendInput(1, new[] { input }, Marshal.SizeOf<Win32.INPUT>());
+        }
+
+        private static void SendKey(VirtualKeyCode vk, uint flags, ulong tag)
+        {
             var input = new Win32.INPUT {
                 type = Win32.INPUT_KEYBOARD,
                 U = new Win32.InputUnion {
@@ -103,8 +136,13 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// <summary>
         /// Creates the hotkey controller and delays hook setup until the settings window has an HWND.
         /// </summary>
-        public HotkeyController(Window window, SettingsViewModel viewModel, ControllerManager controllerManager)
+        public HotkeyController(Window window, SettingsViewModel viewModel, ControllerManager controllerManager,
+            Action<VirtualKeyCode, uint, ulong>? sendKey = null,
+            Action<int, bool>? sendSideMouse = null, Func<Key, bool>? isKeyDown = null)
         {
+            _sendKey = sendKey ?? SendKey;
+            _sendSideMouse = sendSideMouse ?? SendSideMouse;
+            _isKeyDown = isKeyDown ?? Helper.IsKeyDown;
             _sim = new InputSimulator();
             _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             _controllerManager = controllerManager ?? throw new ArgumentNullException(nameof(controllerManager));
@@ -143,6 +181,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         public void Rebind()
         {
+            ReleaseActiveInputs();
             foreach (var id in _callbacks.Keys.ToList())
                 Win32.UnregisterHotKey(_hwndSource.Handle, id);
             _callbacks.Clear();
@@ -162,6 +201,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         public void RebindOnToOffWASDMode()
         {
+            ReleaseActiveInputs();
             foreach (var id in _callbacks.Keys.ToList())
                 Win32.UnregisterHotKey(_hwndSource.Handle, id);
             _callbacks.Clear();
@@ -228,9 +268,61 @@ namespace PathOfWASD.Overlays.Settings.Services
             RegisterCallbacks(Key.F23, Key.NoName);
             RegisterCallbacks(Key.F24, Key.Pa1);
             RegisterCallbacks(Key.F22, Key.Oem102);
+            foreach (var button in new[] { 4, 5 })
+            {
+                if ((button == 4 ? Mouse4Key : Mouse5Key) == null) continue;
+                var placeholder = Helper.ToWinFormsKey(SideMouseBindings.Placeholder(button));
+                _swapMap[SideMouseBindings.RawKey(button)] = placeholder;
+                _skillDownCallbacks[placeholder] = () =>
+                {
+                    if (_heldSideButtons.TryGetValue(button, out var press))
+                        _ = HandleMappedKeyDown(press.Output, placeholder, true, press);
+                };
+            }
         }
         
-        private bool AltMode => _viewModel.InvertAltMode ? Helper.IsKeyDown(Helper.ToVkKey(_viewModel.HoldToggleAltKey.VirtualKey)) : !Helper.IsKeyDown(Helper.ToVkKey(_viewModel.HoldToggleAltKey.VirtualKey));
+        private bool AltMode => _viewModel.InvertAltMode ? _isKeyDown(Helper.ToVkKey(_viewModel.HoldToggleAltKey.VirtualKey)) : !_isKeyDown(Helper.ToVkKey(_viewModel.HoldToggleAltKey.VirtualKey));
+
+        public bool HandleSideButton(int button, bool isDown)
+        {
+            if (button is not (4 or 5)) return false;
+            if (isDown)
+            {
+                if (_heldSideButtons.ContainsKey(button)) return true;
+                var key = button == 4 ? Mouse4Key : Mouse5Key;
+                var placeholder = Helper.ToWinFormsKey(SideMouseBindings.Placeholder(button));
+                if (!SideButtonsEnabled || SkipLogic || _toggledOff || key == null
+                    || !_skillDownCallbacks.TryGetValue(placeholder, out var down)) return false;
+                bool asMouse = AltMode;
+                _heldSideButtons.Add(button, new SideButtonPress(button,
+                    asMouse ? SideMouseBindings.RawKey(button) : key.Value, placeholder, asMouse, _bindingGeneration, --_nextSideSource));
+                down();
+                return true;
+            }
+
+            // Consume the matching release even after mode-off or a binding change.
+            if (!_heldSideButtons.Remove(button, out var held)) return false;
+            if (held.Generation == _bindingGeneration && _releaseCallbacks.TryGetValue(held.Placeholder, out var up)) up();
+            return true;
+        }
+
+        public void ReleaseActiveInputs()
+        {
+            _bindingGeneration++;
+            foreach (var press in _heldSideButtons.Values)
+            {
+                if (_releaseCallbacks.TryGetValue(press.Placeholder, out var release)) release();
+                _pendingDirectionalRestoreKeys.Remove(press.Output);
+            }
+            foreach (var key in _physicalPressed.Concat(_outputSources.HeldKeys).Distinct().ToArray())
+            {
+                if (_swapMap.TryGetValue(key, out var placeholder)
+                    && _releaseCallbacks.TryGetValue(placeholder, out var up)) up();
+                InjectLiteralKeyUp(key);
+            }
+            _physicalPressed.Clear();
+            _outputSources.Clear();
+        }
         
         /// <summary>
         /// Builds the placeholder-key map for skill bindings and the fixed WASD handlers.
@@ -257,15 +349,15 @@ namespace PathOfWASD.Overlays.Settings.Services
 
             BindMouseKeys();
             
-            foreach (var wpfKey in new[] { Key.W, Key.A, Key.S, Key.D })
+            foreach (var binding in MovementBindings.ForLayout(_controllerManager.UseArrowKeys))
             {
-                _skillDownCallbacks[Helper.ToWinFormsKey(wpfKey)] = () =>
+                _skillDownCallbacks[Helper.ToWinFormsKey(binding.Physical)] = () =>
                 {
-                    _ = HandleWASDKeyDown(Helper.ToWinFormsKey(wpfKey));
+                    _ = HandleWASDKeyDown(Helper.ToWinFormsKey(binding.Logical));
                 };
-                _releaseCallbacks[Helper.ToWinFormsKey(wpfKey)] = () =>
+                _releaseCallbacks[Helper.ToWinFormsKey(binding.Physical)] = () =>
                 {
-                    _ = HandleWASDKeyUp(Helper.ToWinFormsKey(wpfKey));
+                    _ = HandleWASDKeyUp(Helper.ToWinFormsKey(binding.Logical));
                 };
             }
         }
@@ -363,8 +455,9 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// <summary>
         /// Runs the ordered mapped key-down pipeline: controller work, literal injection, then release wait.
         /// </summary>
-        private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode? placeholderVk = null, bool isClick = false)
+        private async Task HandleMappedKeyDown(VirtualKeyCode physicalVk, VirtualKeyCode? placeholderVk = null, bool isClick = false, SideButtonPress? sidePress = null)
 {
+    int? generation = isClick && sidePress == null ? null : _bindingGeneration;
     if (!placeholderVk.HasValue)
     {
         placeholderVk = _swapMap[physicalVk];
@@ -379,10 +472,11 @@ namespace PathOfWASD.Overlays.Settings.Services
     if (SkipLogic)
     {
         InjectLiteralKeyDown(physicalVk);
-        await HandleMappedKeyUp(physicalVk, placeholderVk.Value, isClick);
+        await HandleMappedKeyUp(physicalVk, placeholderVk.Value, isClick, generation, sidePress);
         return;
     }
     await Task.Delay(8);
+    if (generation.HasValue && generation != _bindingGeneration) return;
     var isDirectionalSkill = _controllerManager.DirectionalKeys.Contains(Helper.ToVkKey(placeholderVk.Value));
     
     if (_controllerManager.State.AnyOtherWASDIsCurrentlyHeldDown && isDirectionalSkill)
@@ -391,6 +485,13 @@ namespace PathOfWASD.Overlays.Settings.Services
 
         foreach (var skillKey in _suspendedSkillsDuringDirectionalInput.ToList())
         {
+            var sideButton = SideMouseBindings.Button(skillKey);
+            if (sideButton != 0)
+            {
+                if (_heldSideButtons.TryGetValue(sideButton, out var heldSide)) InjectDirectionalRestoreKeyUp(heldSide.Output);
+                else _suspendedSkillsDuringDirectionalInput.Remove(skillKey);
+                continue;
+            }
             var mappedKey = _swapMap.FirstOrDefault(kvp => kvp.Value == Helper.ToWinFormsKey( skillKey)).Key;
             if (mappedKey == VirtualKeyCode.F23)
             {
@@ -442,22 +543,25 @@ namespace PathOfWASD.Overlays.Settings.Services
     }
     var op = Application.Current.Dispatcher.InvokeAsync(
         () => _controllerManager.HandleKeyDownAsync(
-            KeyInterop.KeyFromVirtualKey((int)placeholderVk), isClick && AltMode)
+            KeyInterop.KeyFromVirtualKey((int)placeholderVk), sidePress?.AsMouse ?? (isClick && AltMode))
     );
     var inner = await op; 
     await inner;          
 
     await Task.Delay(24);
+    if (generation.HasValue && generation != _bindingGeneration) return;
 
-    InjectLiteralKeyDown(physicalVk);
+    if (!generation.HasValue || _outputSources.Down(physicalVk, sidePress?.SourceId ?? (int)placeholderVk.Value))
+        InjectLiteralKeyDown(physicalVk);
 
 
 
     await tcs.Task;
     
     await Task.Delay(8);
+    if (generation.HasValue && generation != _bindingGeneration) return;
 
-    await HandleMappedKeyUp(physicalVk, placeholderVk.Value, isClick);
+    await HandleMappedKeyUp(physicalVk, placeholderVk.Value, isClick, generation, sidePress);
 }
 
 
@@ -465,7 +569,7 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// <summary>
         /// Runs the mapped key-up pipeline and restores directional state after placeholder release.
         /// </summary>
-        private async Task HandleMappedKeyUp(VirtualKeyCode physicalVk, VirtualKeyCode placeholderVk, bool isClick)
+        private async Task HandleMappedKeyUp(VirtualKeyCode physicalVk, VirtualKeyCode placeholderVk, bool isClick, int? generation, SideButtonPress? sidePress)
         {
             if (SkipLogic)
             {
@@ -482,12 +586,14 @@ namespace PathOfWASD.Overlays.Settings.Services
             var isDirectionalUp = _controllerManager.DirectionalKeys.Contains(Helper.ToVkKey( placeholderVk));
             var op = Application.Current.Dispatcher.InvokeAsync(
                 () => _controllerManager.HandleKeyUpAsync(
-                    KeyInterop.KeyFromVirtualKey((int)placeholderVk), isClick && AltMode)
+                    KeyInterop.KeyFromVirtualKey((int)placeholderVk), sidePress?.AsMouse ?? (isClick && AltMode))
             );
 
             var inner = await op;     
 
             await inner;
+
+            if (generation.HasValue && generation != _bindingGeneration) return;
 
             if (!isDirectionalUp)
             {
@@ -503,6 +609,12 @@ namespace PathOfWASD.Overlays.Settings.Services
             {
                 foreach (var skillKey in _suspendedSkillsDuringDirectionalInput)
                 {
+                    var sideButton = SideMouseBindings.Button(skillKey);
+                    if (sideButton != 0)
+                    {
+                        if (_heldSideButtons.TryGetValue(sideButton, out var heldSide)) _ = RestoreSidePress(heldSide);
+                        continue;
+                    }
                     var mappedKey = _swapMap.FirstOrDefault(kvp => kvp.Value == Helper.ToWinFormsKey(skillKey)).Key;
                     if (mappedKey == VirtualKeyCode.F23)
                     {
@@ -524,12 +636,23 @@ namespace PathOfWASD.Overlays.Settings.Services
                 }
             }
             
-            InjectLiteralKeyUp(physicalVk);
+            if (!generation.HasValue || _outputSources.Up(physicalVk, sidePress?.SourceId ?? (int)placeholderVk))
+                InjectLiteralKeyUp(physicalVk);
             
         }
         /// <summary>
-        /// Forwards a raw WASD key-down into the controller state machine.
+        /// Restores a suspended side-button output only while that same press is still held.
         /// </summary>
+        private async Task RestoreSidePress(SideButtonPress press)
+        {
+            if (!_pendingDirectionalRestoreKeys.Contains(press.Output)) return;
+            await Task.Delay(40);
+            _pendingDirectionalRestoreKeys.Remove(press.Output);
+            if (press.Generation == _bindingGeneration
+                && _heldSideButtons.TryGetValue(press.Button, out var current) && ReferenceEquals(press, current))
+                InjectKey(press.Output, 0, Win32.DirectionalRestoreInjectionTag);
+        }
+
         private async Task HandleWASDKeyDown(VirtualKeyCode physicalVk)
         {
             if (SkipLogic)
@@ -626,10 +749,9 @@ namespace PathOfWASD.Overlays.Settings.Services
                     {
                         InjectPlaceholderKeyDown(mapped);
                     }
-                    else if (isUp)
+                    else if (isUp && _physicalPressed.Remove(vk))
                     {
                         InjectPlaceholderKeyUp(mapped);
-                        _physicalPressed.Remove(vk);
                     }
                     return (IntPtr)1; 
                 }
@@ -818,6 +940,8 @@ namespace PathOfWASD.Overlays.Settings.Services
         /// </summary>
         public void Dispose()
         {
+            SideButtonsEnabled = false;
+            ReleaseActiveInputs();
             foreach (var id in _callbacks.Keys)
                 Win32.UnregisterHotKey(_hwndSource.Handle, id);
 

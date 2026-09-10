@@ -26,6 +26,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         private readonly ICursorImageLoader _imageLoader;
         private Settings _settings;
         private Settings _lastAppliedSettings;
+        private bool _applyingSettings = true;
         
         [ObservableProperty]
         private bool _hasUnappliedChanges;
@@ -33,6 +34,20 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         private CursorMode _cursorMode;
         [ObservableProperty]
         private bool _hideMovementCursor;
+        [ObservableProperty]
+        private bool _useArrowKeys;
+        [ObservableProperty]
+        private KeyPair mouse4Key = new();
+        [ObservableProperty]
+        private bool enableMouse4AltClick;
+        [ObservableProperty]
+        private KeyPair mouse5Key = new();
+        [ObservableProperty]
+        private bool enableMouse5AltClick;
+        [ObservableProperty]
+        private string _inputBindingError = "";
+        public Func<string?>? ValidateInputChange { get; set; }
+        public event Action? InputBindingsRejected;
         [ObservableProperty]
         private string _cursorHidingStatus = "";
         
@@ -159,6 +174,8 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
     MasterWpfKeys        = KeyMaps.MasterWpfKeys;
     AvailableVirtualKeys = KeyMaps.AvailableVirtualKeys;
 
+    mouse4Key.PropertyChanged += OnToggleEntryChanged;
+    mouse5Key.PropertyChanged += OnToggleEntryChanged;
     movementKey.PropertyChanged += OnKeyPairPropertyChanged;
     standKey.PropertyChanged += OnKeyPairPropertyChanged;
     toggleOverlayKey.PropertyChanged += OnKeyPairPropertyChanged;
@@ -209,6 +226,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         }
     }
     HasUnappliedChanges = !GetCurrentSettings().Equals(_lastAppliedSettings);
+    if (!_applyingSettings) ValidateInputBindings();
 }
 
         /// <summary>
@@ -217,6 +235,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         private void OnToggleEntryChanged(object sender, PropertyChangedEventArgs e)
 {
     HasUnappliedChanges = !GetCurrentSettings().Equals(_lastAppliedSettings);
+    if (!_applyingSettings) ValidateInputBindings();
 }
         public void UpdateAppSize(int width, int height)
         {
@@ -229,6 +248,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         /// </summary>
         private void ApplySettings(Settings s, POINT? oldpoint = null)
         {
+            _applyingSettings = true;
             CursorMode = s.CursorMode;
             HideMovementCursor = s.HideMovementCursor;
             MovementKey.VirtualKey               = s.MovementKey;
@@ -270,6 +290,13 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
                 ToggleEntries.Add(new ToggleKeyEntry(vk, isDirectional: true));
             }
             
+            UseArrowKeys = s.UseArrowKeys;
+            Mouse4Key.VirtualKey = s.Mouse4Key;
+            EnableMouse4AltClick = s.EnableMouse4AltClick;
+            Mouse5Key.VirtualKey = s.Mouse5Key;
+            EnableMouse5AltClick = s.EnableMouse5AltClick;
+            _applyingSettings = false;
+            ValidateInputBindings();
             HasUnappliedChanges = false;
         }
         
@@ -318,10 +345,20 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         /// </summary>
         private void Apply()
         {
+            if (!ValidateInputBindings())
+            {
+                InputBindingsRejected?.Invoke();
+                return;
+            }
             var newSettings = new Settings
             {
                 CursorMode = CursorMode,
                 HideMovementCursor = HideMovementCursor,
+                UseArrowKeys = UseArrowKeys,
+                Mouse4Key = Mouse4Key.VirtualKey,
+                EnableMouse4AltClick = EnableMouse4AltClick,
+                Mouse5Key = Mouse5Key.VirtualKey,
+                EnableMouse5AltClick = EnableMouse5AltClick,
                 MovementKey = MovementKey.VirtualKey,
                 StandKey = StandKey.VirtualKey,
                 ToggleOverlayKey = ToggleOverlayKey.VirtualKey,
@@ -371,10 +408,20 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         /// </summary>
         private void Save()
         {
+            if (!ValidateInputBindings())
+            {
+                InputBindingsRejected?.Invoke();
+                return;
+            }
             var newSettings = new Settings
             {
                 CursorMode = CursorMode,
                 HideMovementCursor = HideMovementCursor,
+                UseArrowKeys = UseArrowKeys,
+                Mouse4Key = Mouse4Key.VirtualKey,
+                EnableMouse4AltClick = EnableMouse4AltClick,
+                Mouse5Key = Mouse5Key.VirtualKey,
+                EnableMouse5AltClick = EnableMouse5AltClick,
                 MovementKey =  MovementKey.VirtualKey,
                 StandKey =  StandKey.VirtualKey,
                 ToggleOverlayKey =  ToggleOverlayKey.VirtualKey,
@@ -418,6 +465,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             ApplySettings(newSettings);
             _settings = newSettings;
             _lastAppliedSettings = _settings.Clone();
+            InputBindingError = "";
             HasUnappliedChanges = false;
             SaveRequested?.Invoke();
         }
@@ -553,6 +601,11 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             {
                 CursorMode = CursorMode,
                 HideMovementCursor = HideMovementCursor,
+                UseArrowKeys = UseArrowKeys,
+                Mouse4Key = Mouse4Key.VirtualKey,
+                EnableMouse4AltClick = EnableMouse4AltClick,
+                Mouse5Key = Mouse5Key.VirtualKey,
+                EnableMouse5AltClick = EnableMouse5AltClick,
                 MovementKey =  MovementKey.VirtualKey,
                 StandKey =  StandKey.VirtualKey,
                 ToggleOverlayKey =  ToggleOverlayKey.VirtualKey,
@@ -594,6 +647,64 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             };
         }
 
+        public bool ValidateInputBindings()
+        {
+            InputBindingError = ValidateInputChange?.Invoke() ?? "";
+            if (InputBindingError.Length != 0) return false;
+            var movement = MovementBindings.ForLayout(UseArrowKeys)
+                .Select(binding => Helper.ToWinFormsKey(binding.Physical)).ToHashSet();
+            var topLevel = new (string Name, KeyPair Pair)[]
+            {
+                ("Movement Key", MovementKey), ("Stand Key", StandKey),
+                ("Toggle Settings", ToggleOverlayKey), ("Toggle Movement Mode", ToggleVisualCursorKey),
+                ("Hold Toggle Movement Mode", HoldToggleVisualCursorKey), ("Hold Toggle Mouse Alt Key", HoldToggleAltKey),
+                ("Set Midpoint", SetMidpointKey), ("Teleport to Midpoint", TeleportMidpointKey),
+                ("Save/Apply", ApplyKey), ("Center Overlay", CenterOverlayKey),
+                ("Enable Set Midpoint", EnableSetMidpointKey), ("Left Alt Click", LeftKey),
+                ("Right Alt Click", RightKey), ("Middle Alt Click", MiddleKey)
+            };
+            var bindings = topLevel.Concat(ToggleEntries.Select((entry, index) =>
+                (Name: $"Skill Keys row {index + 1}" + (entry.IsDirectional ? " (directional)" : ""), Pair: entry.SelectedKey))).ToList();
+            if (EnableMouse4AltClick) bindings.Add(("Mouse 4 Alt Click", Mouse4Key));
+            if (EnableMouse5AltClick) bindings.Add(("Mouse 5 Alt Click", Mouse5Key));
+            var conflicts = bindings.Where(binding => movement.Contains(binding.Pair.VirtualKey)).ToArray();
+            if (conflicts.Length != 0)
+            {
+                var layout = UseArrowKeys ? "arrow-key" : "WASD";
+                var otherLayout = UseArrowKeys ? "WASD" : "arrow-key";
+                InputBindingError = $"Cannot use {layout} movement. Conflicting bindings:\n"
+                    + string.Join("\n", conflicts.Select(binding => $"• {binding.Name}: {binding.Pair.DisplayKey}"))
+                    + $"\nReassign these keys or select {otherLayout} movement again. Your bindings have been kept.";
+                return false;
+            }
+
+            // Internal placeholders must never become user bindings, regardless of layout.
+            var internalKeys = bindings.Where(binding =>
+            {
+                var key = binding.Pair.VirtualKey;
+                return (int)key <= 0 || key >= VirtualKeyCode.ATTN
+                    || key >= VirtualKeyCode.F13 && key <= VirtualKeyCode.F24
+                    || key == Helper.ToWinFormsKey(Key.Oem102);
+            }).ToArray();
+            if (internalKeys.Length != 0)
+            {
+                InputBindingError = "Choose a keyboard key instead of an internal routing key for: "
+                    + string.Join(", ", internalKeys.Select(binding => binding.Name)) + ".";
+                return false;
+            }
+            foreach (var (enabled, pair, name) in new[]
+                { (EnableMouse4AltClick, Mouse4Key, "Mouse 4 Alt Click"), (EnableMouse5AltClick, Mouse5Key, "Mouse 5 Alt Click") })
+            {
+                if (!enabled) continue;
+                var duplicate = topLevel.Where(binding => binding.Pair.VirtualKey == pair.VirtualKey).ToArray();
+                if (duplicate.Length == 0) continue;
+                InputBindingError = $"{name}: {pair.DisplayKey} is already assigned to "
+                    + string.Join(", ", duplicate.Select(binding => binding.Name)) + ". Choose another key.";
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// Swaps duplicate key assignments so each top-level hotkey remains unique.
         /// </summary>
@@ -620,6 +731,7 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
             }
 
             HasUnappliedChanges = !GetCurrentSettings().Equals(_lastAppliedSettings);
+            if (!_applyingSettings) ValidateInputBindings();
         }
 
         /// <summary>
@@ -628,6 +740,8 @@ namespace PathOfWASD.Overlays.Settings.ViewModels
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
+            if (!_applyingSettings && e.PropertyName is nameof(UseArrowKeys) or nameof(EnableMouse4AltClick) or nameof(EnableMouse5AltClick))
+                ValidateInputBindings();
 
             if (e.PropertyName != nameof(HasUnappliedChanges) && e.PropertyName != nameof(EnableSetMidpoint))
                 HasUnappliedChanges = !GetCurrentSettings().Equals(_lastAppliedSettings);
