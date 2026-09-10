@@ -469,16 +469,16 @@
                     SelectedKey="{Binding MiddleKey.DisplayKey, Mode=TwoWay}" />
                   <CheckBox Grid.Row="3" Grid.Column="0" Style="{StaticResource ModernCheckBox}"
                             IsChecked="{Binding EnableMouse4AltClick, Mode=TwoWay}" VerticalAlignment="Center">
-                    <TextBlock Style="{StaticResource UnderlinedTextBlockStyle}" Text="Mouse 4 Alt Click:"
-                               Tag="Enable alternate clicks for Mouse 4 (the back side button). Click the key box, then press the keyboard key assigned to your skill in PoE.&#10;&#10;While holding ‘Toggle Mouse Alt Key’, this button sends your chosen key instead of a normal click. Reverse Mouse Alt Key Functionality swaps these modes. No separate Skill Keys entry is needed.&#10;&#10;Disabled buttons work normally. Turn movement mode off before saving changes."/>
+                    <TextBlock Style="{StaticResource UnderlinedTextBlockStyle}" Text="Mouse 4 (Back):"
+                               Tag="Mouse 4 is the standard mouse Back button input. This option responds to that actual mouse input, not a fixed physical button position. If your mouse software remaps the button to a keyboard key or another action, it may no longer send Mouse 4; restore its Back assignment to use this option. Click the key box, then press the keyboard key assigned to your skill in PoE.&#10;&#10;While holding ‘Toggle Mouse Alt Key’, this button sends your chosen key instead of a normal click. Reverse Mouse Alt Key Functionality swaps these modes. No separate Skill Keys entry is needed.&#10;&#10;Disabled buttons work normally. Turn movement mode off before saving changes."/>
                   </CheckBox>
                   <bgFunctionalities:KeyCaptureBox x:Name="Mouse4AltKeyBox" Grid.Column="1" Grid.Row="3"
                     Style="{StaticResource ModernTextBox}" Margin="10,0,10,4" MinHeight="24"
                     IsEnabled="{Binding EnableMouse4AltClick}" SelectedKey="{Binding Mouse4Key.DisplayKey, Mode=TwoWay}"/>
                   <CheckBox Grid.Row="3" Grid.Column="2" Style="{StaticResource ModernCheckBox}"
                             IsChecked="{Binding EnableMouse5AltClick, Mode=TwoWay}" VerticalAlignment="Center">
-                    <TextBlock Style="{StaticResource UnderlinedTextBlockStyle}" Text="Mouse 5 Alt Click:"
-                               Tag="Enable alternate clicks for Mouse 5 (the forward side button). Click the key box, then press the keyboard key assigned to your skill in PoE.&#10;&#10;While holding ‘Toggle Mouse Alt Key’, this button sends your chosen key instead of a normal click. Reverse Mouse Alt Key Functionality swaps these modes. No separate Skill Keys entry is needed.&#10;&#10;Disabled buttons work normally. Turn movement mode off before saving changes."/>
+                    <TextBlock Style="{StaticResource UnderlinedTextBlockStyle}" Text="Mouse 5 (Fwd):"
+                               Tag="Mouse 5 is the standard mouse Forward button input. This option responds to that actual mouse input, not a fixed physical button position. If your mouse software remaps the button to a keyboard key or another action, it may no longer send Mouse 5; restore its Forward assignment to use this option. Click the key box, then press the keyboard key assigned to your skill in PoE.&#10;&#10;While holding ‘Toggle Mouse Alt Key’, this button sends your chosen key instead of a normal click. Reverse Mouse Alt Key Functionality swaps these modes. No separate Skill Keys entry is needed.&#10;&#10;Disabled buttons work normally. Turn movement mode off before saving changes."/>
                   </CheckBox>
                   <bgFunctionalities:KeyCaptureBox x:Name="Mouse5AltKeyBox" Grid.Column="3" Grid.Row="3"
                     Style="{StaticResource ModernTextBox}" Margin="10,0,10,4" MinHeight="24"

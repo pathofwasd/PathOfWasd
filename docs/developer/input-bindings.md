@@ -5,8 +5,8 @@ Development build; automated checks pass, but PoE validation is still required b
 ## Usage
 
 1. Turn movement mode off.
-2. Under **Mapped Mouse Alt Keys**, enable **Mouse 4 Alt Click** and/or **Mouse 5 Alt Click**.
-   Hover an underlined label for help; Mouse 4 is the back side button and Mouse 5 is forward.
+2. Under **Mapped Mouse Alt Keys**, enable **Mouse 4 (Back)** and/or **Mouse 5 (Fwd)**.
+   Hover an underlined label for help; Mouse 4 is the standard Back mouse input and Mouse 5 is Forward. If mouse software remaps a physical button to a keyboard key or another action, restore its Back/Forward assignment to use the corresponding option.
 3. Click the corresponding key box and press the keyboard key assigned to the desired skill in PoE. A separate Skill Keys entry is not required.
 4. Save/apply and enable movement mode.
 
